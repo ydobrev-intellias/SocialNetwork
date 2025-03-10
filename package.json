@@ -1,0 +1,38 @@
+{
+  "name": "socialnetwork",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "start:dev": "docker compose -f docker-compose.dev.yml up --build",
+    "start:prod": "docker compose -f docker-compose.prod.yml up --build",
+    "start": "npm run start:dev",
+    "build": "docker compose -f docker-compose.prod.yml build",
+    "up": "docker compose -f docker-compose.dev.yml up",
+    "clean:dev:all": "docker compose -f docker-compose.dev.yml down --volumes --remove-orphans && docker system prune -a -f --volumes",
+    "clean:dev:docker": "docker-compose -f docker-compose.dev.yml down --volumes --remove-orphans && docker system prune -f",
+    "clean:prod:all": "docker compose -f docker-compose.prod.yml down --volumes --remove-orphans && docker system prune -a -f --volumes",
+    "clean:prod:docker": "docker-compose -f docker-compose.prod.yml down --volumes --remove-orphans && docker system prune -f"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ydobrev-intellias/SocialNetwork.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ydobrev-intellias/SocialNetwork/issues"
+  },
+  "homepage": "https://github.com/ydobrev-intellias/SocialNetwork#readme",
+  "description": "",
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "eslint": "^9.22.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "ts-node-dev": "^2.0.0",
+    "typescript-eslint": "^8.26.0"
+  }
+}

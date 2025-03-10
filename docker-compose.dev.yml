@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ./client
+      args:
+        BUILD_ENV: development
+    volumes:
+      - ./client:/app
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - postgres_post_dev
+      - postgres_user_dev
+    command: sh -c "npm install && npm run dev"
+
+  postgres_post_dev:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: postuser
+      POSTGRES_PASSWORD: postpassword
+      POSTGRES_DB: postdb
+    volumes:
+      - postgres_post_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  postgres_user_dev:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: useruser
+      POSTGRES_PASSWORD: userpassword
+      POSTGRES_DB: userdb
+    volumes:
+      - postgres_user_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  user-service:
+    build:
+      context: ./microservices/user-service
+      args: 
+        BUILD_ENV: development
+    volumes:
+      - ./microservices/user-service:/app
+    ports:
+      - "4001:4001"
+    environment:
+      - NODE_ENV=development
+      - PORT=4001
+    depends_on:
+      - postgres_user_dev
+    command: sh -c "npm install && npm run dev"
+
+  post-service:
+    build:
+      context: ./microservices/post-service
+      args: 
+        BUILD_ENV: development
+    volumes:
+      - ./microservices/post-service:/app
+    ports:
+      - "4002:4002"
+    environment:
+      - NODE_ENV=development
+      - PORT=4002
+    depends_on:
+      - postgres_post_dev
+    command: sh -c "npm install && npm run dev"
+
+volumes:
+  postgres_post_data:
+  postgres_user_data:
