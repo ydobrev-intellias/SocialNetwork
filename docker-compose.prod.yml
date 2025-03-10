@@ -13,7 +13,7 @@ services:
     depends_on:
       - user-service
       - post-service
-    command: ["npm", "run", "preview"]  # Just run the preview after building
+    command: ["npm", "run", "preview"]
 
   user-service:
     build:

@@ -15,6 +15,8 @@ services:
     depends_on:
       - postgres_post_dev
       - postgres_user_dev
+      - redis
+      - rabbitmq
     command: sh -c "npm install && npm run dev"
 
   postgres_post_dev:
@@ -51,8 +53,12 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=4001
+      - REDIS=redis://localhost:6379
+      - RABBITMQ=amqp://localhost:5672
     depends_on:
       - postgres_user_dev
+      - redis
+      - rabbitmq
     command: sh -c "npm install && npm run dev"
 
   post-service:
@@ -67,10 +73,41 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=4002
+      - REDIS=redis://localhost:6379
+      - RABBITMQ=amqp://localhost:5672
     depends_on:
       - postgres_post_dev
+      - redis
+      - rabbitmq
     command: sh -c "npm install && npm run dev"
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+
+  rabbitmq:
+    image: "rabbitmq:management"
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - app_network
 
 volumes:
   postgres_post_data:
   postgres_user_data:
+  redis_data:
+
+networks:
+  app_network:
+    driver: bridge
