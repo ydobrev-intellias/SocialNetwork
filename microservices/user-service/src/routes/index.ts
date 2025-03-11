@@ -1,9 +1,8 @@
-
-import Router from "koa-router";
+import Router from 'koa-router';
+import userRoutes from './userRoutes';
 
 const router = new Router();
 
-router.use()
-
+router.use(userRoutes.routes());
 
 export default router;
