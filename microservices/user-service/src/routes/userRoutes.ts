@@ -3,12 +3,14 @@ import { AppDataSource } from '../data-source';
 import { User } from '../entities/User';
 import bcrypt from 'bcryptjs';
 import { config } from '../../config';
+import userSchema from '../schemas/userSchemas';
+import { validateRequest } from '../middlewares/validateRequest';
 
 const router = new Router({
   prefix: '/users',
 });
 
-router.post('/sign-up', async (ctx) => {
+router.post('/sign-up', validateRequest(userSchema), async (ctx) => {
   const { username, password } = ctx.request.body as User;
 
   const userRepository = AppDataSource.getRepository(User);
@@ -24,7 +26,7 @@ router.post('/sign-up', async (ctx) => {
   ctx.body = 'User signed up';
 });
 
-router.post('/sign-in', async (ctx) => {
+router.post('/sign-in', validateRequest(userSchema), async (ctx) => {
   const { username, password } = ctx.request.body as User;
 
   const userRepository = AppDataSource.getRepository(User);
