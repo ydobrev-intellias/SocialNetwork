@@ -1,15 +1,26 @@
 version: '3.8'
 
 services:
+  api-gateway:
+    image: nginx:latest
+    container_name: api-gateway
+    volumes:
+      - ./nginx/nginx.config:/etc/nginx/nginx.conf:ro
+    ports:
+      - '4000:4000'
+    depends_on:
+      - user-service
+      - post-service
   client:
     build:
       context: ./client
       args:
         BUILD_ENV: development
+    container_name: client
     volumes:
       - ./client:/app
     ports:
-      - "5173:5173"
+      - '5173:5173'
     environment:
       - NODE_ENV=development
     depends_on:
@@ -28,7 +39,7 @@ services:
     volumes:
       - postgres_post_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
 
   postgres_user_dev:
     image: postgres:13-alpine
@@ -39,17 +50,18 @@ services:
     volumes:
       - postgres_user_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - '5433:5432'
 
   user-service:
+    container_name: user-service
     build:
       context: ./microservices/user-service
-      args: 
+      args:
         BUILD_ENV: development
     volumes:
       - ./microservices/user-service:/app
     ports:
-      - "4001:4001"
+      - '4001:4001'
     environment:
       - NODE_ENV=development
       - PORT=4001
@@ -62,14 +74,15 @@ services:
     command: sh -c "npm install && npm run dev"
 
   post-service:
+    container_name: post-service
     build:
       context: ./microservices/post-service
-      args: 
+      args:
         BUILD_ENV: development
     volumes:
       - ./microservices/post-service:/app
     ports:
-      - "4002:4002"
+      - '4002:4002'
     environment:
       - NODE_ENV=development
       - PORT=4002
@@ -85,18 +98,18 @@ services:
     image: redis:alpine
     container_name: redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     networks:
       - app_network
 
   rabbitmq:
-    image: "rabbitmq:management"
+    image: 'rabbitmq:management'
     container_name: rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - '5672:5672'
+      - '15672:15672'
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
