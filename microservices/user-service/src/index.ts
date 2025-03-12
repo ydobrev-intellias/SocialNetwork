@@ -9,7 +9,6 @@ const router = new Router();
 app.use(cors());
 app.use(router.routes()).use(router.allowedMethods());
 
-
 app.listen(config.port, () => {
   console.log(`User-service running on port ${config.port} in ${config.environment} environment`);
 });

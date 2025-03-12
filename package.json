@@ -2,9 +2,12 @@
   "name": "socialnetwork",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "format": "prettier --write .",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "start:dev": "docker compose -f docker-compose.dev.yml up --build",
     "start:prod": "docker compose -f docker-compose.prod.yml up --build",
     "start": "npm run start:dev",
@@ -15,6 +18,10 @@
     "clean:prod:all": "docker compose -f docker-compose.prod.yml down --volumes --remove-orphans && docker system prune -a -f --volumes",
     "clean:prod:docker": "docker-compose -f docker-compose.prod.yml down --volumes --remove-orphans && docker system prune -f"
   },
+  "workspaces": [
+    "client",
+    "microservices/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ydobrev-intellias/SocialNetwork.git"
@@ -29,10 +36,17 @@
   "description": "",
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
     "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
     "prettier": "^3.5.3",
     "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.0"
   }
 }
