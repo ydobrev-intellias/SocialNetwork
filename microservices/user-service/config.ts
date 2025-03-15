@@ -2,8 +2,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  port: process.env.PORT || 4001,
+  port: process.env.PORT || 4002,
   environment: process.env.NODE_ENV || 'development',
   databaseUrl: process.env.DATABASE_URL || '',
-  saltRounds: 10,
+  rabbitmqUrl: process.env.RABBITMQ_URL || '',
+  rabbitmqQueueName: process.env.RABBITMQ_USER_EVENTS_QUEUE || '',
 };
