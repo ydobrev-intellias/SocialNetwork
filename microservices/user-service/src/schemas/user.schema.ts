@@ -5,8 +5,12 @@ const userSchema: SchemaObject = {
   properties: {
     username: { type: 'string' },
     password: { type: 'string' },
+    role: { enum: ['user', 'admin'] },
+    contacts: {
+      enum: ['linkedin', 'phone', 'email'],
+    },
   },
-  required: ['username', 'password'],
+  required: [],
   additionalProperties: false,
 };
 export default userSchema;
