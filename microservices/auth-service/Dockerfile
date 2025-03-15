@@ -10,7 +10,7 @@ COPY . .
 
 RUN npm install -g ts-node-dev
 
-EXPOSE 4002
+EXPOSE 4001
 
 CMD ["npm", "run", "dev"]
 
@@ -28,6 +28,6 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 4002
+EXPOSE 4001
 
 CMD ["npm", "start"]
