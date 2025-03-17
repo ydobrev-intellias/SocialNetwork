@@ -4,7 +4,7 @@ WORKDIR /app
 
 ARG BUILD_ENV=production
 
-COPY package.json package-lock.json ./
+COPY package*.json ./
 RUN npm install
 
 COPY . .
@@ -15,7 +15,7 @@ FROM node:18-alpine AS production
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json /app/package-lock.json /app/
+COPY --from=builder /app/package*.json /app/
 COPY --from=builder /app/dist /app/dist
 
 RUN npm install --production
@@ -30,7 +30,7 @@ FROM node:18-alpine AS development
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json /app/package-lock.json /app/
+COPY --from=builder /app/package*.json /app/
 
 RUN npm install
 

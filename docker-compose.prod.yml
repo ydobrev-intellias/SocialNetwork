@@ -7,13 +7,13 @@ services:
       args:
         BUILD_ENV: production
     ports:
-      - '4173:4173'
+      - 4173:4173
     environment:
       - NODE_ENV=production
     depends_on:
       - user-service
       - post-service
-    command: ["npm", "run", "preview"]
+    command: ['npm', 'run', 'preview']
 
   user-service:
     build:
@@ -21,11 +21,11 @@ services:
       args:
         BUILD_ENV: production
     ports:
-      - '5001:5001'
+      - 4001:4001
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://user:password@user-db:5432/users_db
-    command: ["npm", "start"]
+    command: ['npm', 'start']
     depends_on:
       - user-db
 
@@ -35,11 +35,11 @@ services:
       args:
         BUILD_ENV: production
     ports:
-      - '5002:5002'
+      - 4002:4002
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://user:password@post-db:5432/posts_db
-    command: ["npm", "start"]
+    command: ['npm', 'start']
     depends_on:
       - post-db
 
@@ -51,7 +51,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: users_db
     ports:
-      - '5433:5432'
+      - 5433:5432
 
   post-db:
     image: postgres:13
@@ -61,7 +61,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: posts_db
     ports:
-      - '5434:5432'
+      - 5434:5432
 
 networks:
   app_network:

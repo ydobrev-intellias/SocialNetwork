@@ -7,10 +7,14 @@ services:
     volumes:
       - ./nginx/nginx.config:/etc/nginx/nginx.conf:ro
     ports:
-      - '4000:4000'
+      - '${API_GATEWAY_PORT}:${API_GATEWAY_PORT}'
     depends_on:
       - user-service
       - post-service
+      - auth-service
+    networks:
+      - app_network
+
   client:
     build:
       context: ./client
@@ -20,37 +24,85 @@ services:
     volumes:
       - ./client:/app
     ports:
-      - '5173:5173'
+      - '${CLIENT_PORT}:${CLIENT_PORT}'
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV}
     depends_on:
-      - postgres_post_dev
-      - postgres_user_dev
+      - postgres_post
+      - postgres_user
       - redis
       - rabbitmq
     command: sh -c "npm install && npm run dev"
 
-  postgres_post_dev:
+  postgres_post:
     image: postgres:13-alpine
     environment:
-      POSTGRES_USER: postuser
-      POSTGRES_PASSWORD: postpassword
-      POSTGRES_DB: postdb
+      POSTGRES_USER: ${POSTGRES_USER_POST}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_POST}
+      POSTGRES_DB: ${POSTGRES_DB_POST}
     volumes:
       - postgres_post_data:/var/lib/postgresql/data
+    container_name: postgres_post
     ports:
-      - '5432:5432'
+      - '${POSTGRES_POST_PORT}:${POSTGRES_DEFAULT_PORT}'
+    networks:
+      - app_network
 
-  postgres_user_dev:
+  postgres_user:
     image: postgres:13-alpine
     environment:
-      POSTGRES_USER: useruser
-      POSTGRES_PASSWORD: userpassword
-      POSTGRES_DB: userdb
+      POSTGRES_USER: ${POSTGRES_USER_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_USER}
+      POSTGRES_DB: ${POSTGRES_DB_USER}
     volumes:
       - postgres_user_data:/var/lib/postgresql/data
+    container_name: postgres_user
     ports:
-      - '5433:5432'
+      - '${POSTGRES_USER_PORT}:${POSTGRES_DEFAULT_PORT}'
+    networks:
+      - app_network
+
+  postgres_auth:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER_AUTH}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_AUTH}
+      POSTGRES_DB: ${POSTGRES_DB_AUTH}
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    container_name: postgres_auth
+    ports:
+      - '${POSTGRES_AUTH_PORT}:${POSTGRES_DEFAULT_PORT}'
+    networks:
+      - app_network
+
+  auth-service:
+    container_name: auth-service
+    build:
+      context: ./microservices/auth-service
+      args:
+        BUILD_ENV: development
+    volumes:
+      - ./microservices/auth-service:/app
+    ports:
+      - '${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}'
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${AUTH_SERVICE_PORT}
+      - REDIS=${REDIS_URL}
+      - DATABASE_URL=${DATABASE_URL_AUTH}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - RABBITMQ_USER_EVENTS_QUEUE=${RABBITMQ_USER_EVENTS_QUEUE}
+    depends_on:
+      - postgres_auth
+      - redis
+      - rabbitmq
+    command: sh -c "npm install && npm run dev"
+    networks:
+      - app_network
 
   user-service:
     container_name: user-service
@@ -60,18 +112,25 @@ services:
         BUILD_ENV: development
     volumes:
       - ./microservices/user-service:/app
+      - ./microservices/user-service/uploads:/app/uploads
     ports:
-      - '4001:4001'
+      - '${USER_SERVICE_PORT}:${USER_SERVICE_PORT}'
+    env_file:
+      - .env
     environment:
-      - NODE_ENV=development
-      - PORT=4001
-      - REDIS=redis://localhost:6379
-      - RABBITMQ=amqp://localhost:5672
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${USER_SERVICE_PORT}
+      - DATABASE_URL=${DATABASE_URL_USER}
+      - REDIS=${REDIS_URL}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - RABBITMQ_USER_EVENTS_QUEUE=${RABBITMQ_USER_EVENTS_QUEUE}
     depends_on:
-      - postgres_user_dev
+      - postgres_user
       - redis
       - rabbitmq
     command: sh -c "npm install && npm run dev"
+    networks:
+      - app_network
 
   post-service:
     container_name: post-service
@@ -82,23 +141,26 @@ services:
     volumes:
       - ./microservices/post-service:/app
     ports:
-      - '4002:4002'
+      - '${POST_SERVICE_PORT}:${POST_SERVICE_PORT}'
     environment:
-      - NODE_ENV=development
-      - PORT=4002
-      - REDIS=redis://localhost:6379
-      - RABBITMQ=amqp://localhost:5672
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${POST_SERVICE_PORT}
+      - DATABASE_URL=${DATABASE_URL_POST}
+      - REDIS=${REDIS_URL}
+      - RABBITMQ_URL=${RABBITMQ_URL}
     depends_on:
-      - postgres_post_dev
+      - postgres_post
       - redis
       - rabbitmq
     command: sh -c "npm install && npm run dev"
+    networks:
+      - app_network
 
   redis:
     image: redis:alpine
     container_name: redis
     ports:
-      - '6379:6379'
+      - '${REDIS_PORT}:${REDIS_PORT}'
     volumes:
       - redis_data:/data
     networks:
@@ -108,8 +170,8 @@ services:
     image: 'rabbitmq:management'
     container_name: rabbitmq
     ports:
-      - '5672:5672'
-      - '15672:15672'
+      - '${RABBITMQ_PORT}:${RABBITMQ_PORT}'
+      - '${RABBITMQ_MANAGEMENT_PORT}:${RABBITMQ_MANAGEMENT_PORT}'
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -119,6 +181,7 @@ services:
 volumes:
   postgres_post_data:
   postgres_user_data:
+  postgres_auth_data:
   redis_data:
 
 networks:
