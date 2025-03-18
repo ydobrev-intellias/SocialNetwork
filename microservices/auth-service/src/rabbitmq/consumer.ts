@@ -29,6 +29,7 @@ export const consumeMessages = async () => {
           const createdAuthUser = await authRepository.create({
             id: data.id,
             username: data.username,
+            email: data.email,
             password: data.password,
             role: data.role,
           });

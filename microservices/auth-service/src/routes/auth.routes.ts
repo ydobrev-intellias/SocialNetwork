@@ -1,6 +1,5 @@
 import Router from 'koa-router';
 
-import authUserSchema from '../schemas/authUser.schema';
 import { validateSchema } from '../middlewares/validateSchema';
 import {
   signInController,
@@ -8,6 +7,7 @@ import {
   signOutController,
 } from '../controllers/auth.controller';
 import { validateRequest } from '../middlewares/validateRequest';
+import { signInSchema, signUpSchema } from '../schemas/authUser.schema';
 
 const router = new Router();
 
