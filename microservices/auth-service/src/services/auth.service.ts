@@ -10,7 +10,7 @@ import redis from '../redis/client';
 export const signUp = async (ctx: Context, body: AuthUser) => {
   const authRepository = AppDataSource.getRepository(AuthUser);
 
-  const existingUser = await authRepository.findOneBy({ username: body.username });
+  const existingUser = await authRepository.findOneBy({ email: body.email });
 
   if (existingUser) {
     ctx.status = 400;
@@ -20,6 +20,7 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
 
   const hashedPassword = await bcrypt.hash(body.password, config.saltRounds);
   const newAuthUser = authRepository.create({
+    email: body.email,
     username: body.username,
     password: hashedPassword,
     role: body.role ?? undefined,
@@ -33,6 +34,7 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
       data: {
         id: newAuthUser.id,
         username: newAuthUser.username,
+        email: newAuthUser.email,
         password: newAuthUser.password,
         role: newAuthUser.role,
       },
@@ -41,7 +43,12 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
   );
 
   const token = jwt.sign(
-    { id: newAuthUser.id, username: newAuthUser.username, role: newAuthUser.role },
+    {
+      id: newAuthUser.id,
+      username: newAuthUser.username,
+      email: newAuthUser.email,
+      role: newAuthUser.role,
+    },
     config.jwtSecret,
     {
       expiresIn: '1h',
@@ -59,7 +66,7 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
 export const signIn = async (ctx: Context, body: AuthUser) => {
   const authRepository = AppDataSource.getRepository(AuthUser);
 
-  const existingUser = await authRepository.findOneBy({ username: body.username });
+  const existingUser = await authRepository.findOneBy({ email: body.email });
 
   if (!existingUser) {
     ctx.status = 404;
@@ -76,7 +83,12 @@ export const signIn = async (ctx: Context, body: AuthUser) => {
   }
 
   const token = jwt.sign(
-    { id: existingUser.id, username: existingUser.username, role: existingUser.role },
+    {
+      id: existingUser.id,
+      username: existingUser.username,
+      email: existingUser.email,
+      role: existingUser.role,
+    },
     config.jwtSecret,
     {
       expiresIn: '1h',

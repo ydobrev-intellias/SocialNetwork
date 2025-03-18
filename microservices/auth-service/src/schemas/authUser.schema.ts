@@ -1,13 +1,23 @@
 import { SchemaObject } from 'ajv';
 
-const authUserSchema: SchemaObject = {
+export const signUpSchema: SchemaObject = {
   type: 'object',
   properties: {
     username: { type: 'string' },
+    email: { type: 'string' },
     password: { type: 'string' },
     role: { enum: ['user', 'admin'] },
   },
-  required: ['username', 'password'],
+  required: ['username', 'email', 'password'],
   additionalProperties: false,
 };
-export default authUserSchema;
+
+export const signInSchema: SchemaObject = {
+  type: 'object',
+  properties: {
+    email: { type: 'string' },
+    password: { type: 'string' },
+  },
+  required: ['email', 'password'],
+  additionalProperties: false,
+};

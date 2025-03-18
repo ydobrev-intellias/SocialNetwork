@@ -4,7 +4,6 @@ import { User } from './User';
 export enum Type {
   PHONE = 'phone',
   LINKEDIN = 'linkedin',
-  EMAIL = 'email',
 }
 
 @Entity('contacts')
