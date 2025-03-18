@@ -1,15 +1,11 @@
 import Router from 'koa-router';
-import { AppDataSource } from '../data-source';
-import { Role, User } from '../entities/User';
-import { Contact } from '../entities/Contact';
 import {
   deleteUserContact,
   getUserContact,
   updateUserContact,
 } from '../controllers/contact.controller';
 import { validateSchema } from '../middlewares/validateSchema';
-import createContactSchema from '../schemas/createContact.schema';
-import updateContactSchema from '../schemas/updateContact.schema';
+import { createContactSchema, updateContactSchema } from '../schemas/contact.schema';
 
 const router = new Router();
 
