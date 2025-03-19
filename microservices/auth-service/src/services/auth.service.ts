@@ -28,15 +28,13 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
 
   await authRepository.save(newAuthUser);
 
+  const { password, ...newAuthUserWithoutPassword } = newAuthUser;
+
   await publishMessage(
     config.rabbitmqQueueName,
     JSON.stringify({
       data: {
-        id: newAuthUser.id,
-        username: newAuthUser.username,
-        email: newAuthUser.email,
-        password: newAuthUser.password,
-        role: newAuthUser.role,
+        ...newAuthUserWithoutPassword,
       },
       type: 'USER_SIGNUP',
     }),
@@ -44,10 +42,7 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
 
   const token = jwt.sign(
     {
-      id: newAuthUser.id,
-      username: newAuthUser.username,
-      email: newAuthUser.email,
-      role: newAuthUser.role,
+      ...newAuthUserWithoutPassword,
     },
     config.jwtSecret,
     {
@@ -60,7 +55,7 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
   });
 
   ctx.status = 202;
-  ctx.body = { message: 'User signed up successfully' };
+  ctx.body = newAuthUserWithoutPassword;
 };
 
 export const signIn = async (ctx: Context, body: AuthUser) => {
@@ -81,13 +76,11 @@ export const signIn = async (ctx: Context, body: AuthUser) => {
     ctx.body = 'Invalid credentials';
     return;
   }
+  const { password, ...existingUserWithoutPassword } = existingUser;
 
   const token = jwt.sign(
     {
-      id: existingUser.id,
-      username: existingUser.username,
-      email: existingUser.email,
-      role: existingUser.role,
+      ...existingUserWithoutPassword,
     },
     config.jwtSecret,
     {
@@ -100,7 +93,7 @@ export const signIn = async (ctx: Context, body: AuthUser) => {
   });
 
   ctx.status = 200;
-  ctx.body = { message: 'User signed in successfully' };
+  ctx.body = existingUserWithoutPassword;
 };
 
 export const signOut = async (ctx: Context) => {
@@ -121,7 +114,7 @@ export const signOut = async (ctx: Context) => {
     });
 
     ctx.status = 200;
-    ctx.body = 'Successfully logged out';
+    ctx.body = '';
   } catch (err) {
     ctx.status = 400;
     ctx.body = 'Invalid token';
