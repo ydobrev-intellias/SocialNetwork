@@ -30,6 +30,7 @@ export const consumeMessages = async () => {
 
           const createdUser = userRepository.create({
             id: data.id,
+            email: data.email,
             username: data.username,
             password: data.password,
             role: data.role,

@@ -1,17 +1,17 @@
 import Router from 'koa-router';
 
-import authUserSchema from '../schemas/authUser.schema';
 import { validateSchema } from '../middlewares/validateSchema';
 import { signInUser, signUpUser, signOutUser } from '../controllers/auth.controller';
 import { validateRequest } from '../middlewares/validateRequest';
+import { signInSchema, signUpSchema } from '../schemas/authUser.schema';
 
 const router = new Router();
 
 router.get('/validate', validateRequest);
 
-router.post('/sign-up', validateSchema(authUserSchema), signUpUser);
+router.post('/sign-up', validateSchema(signUpSchema), signUpUser);
 
-router.post('/sign-in', validateSchema(authUserSchema), signInUser);
+router.post('/sign-in', validateSchema(signInSchema), signInUser);
 
 router.post('/sign-out', signOutUser);
 

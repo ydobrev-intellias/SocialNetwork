@@ -10,7 +10,7 @@ import redis from '../redis/client';
 export const signUp = async (ctx: Context, body: AuthUser) => {
   const authRepository = AppDataSource.getRepository(AuthUser);
 
-  const existingUser = await authRepository.findOneBy({ username: body.username });
+  const existingUser = await authRepository.findOneBy({ email: body.email });
 
   if (existingUser) {
     ctx.status = 400;
@@ -20,6 +20,7 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
 
   const hashedPassword = await bcrypt.hash(body.password, config.saltRounds);
   const newAuthUser = authRepository.create({
+    email: body.email,
     username: body.username,
     password: hashedPassword,
     role: body.role ?? undefined,
@@ -27,21 +28,22 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
 
   await authRepository.save(newAuthUser);
 
+  const { password, ...newAuthUserWithoutPassword } = newAuthUser;
+
   await publishMessage(
     config.rabbitmqQueueName,
     JSON.stringify({
       data: {
-        id: newAuthUser.id,
-        username: newAuthUser.username,
-        password: newAuthUser.password,
-        role: newAuthUser.role,
+        ...newAuthUserWithoutPassword,
       },
       type: 'USER_SIGNUP',
     }),
   );
 
   const token = jwt.sign(
-    { id: newAuthUser.id, username: newAuthUser.username, role: newAuthUser.role },
+    {
+      ...newAuthUserWithoutPassword,
+    },
     config.jwtSecret,
     {
       expiresIn: '1h',
@@ -53,13 +55,13 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
   });
 
   ctx.status = 202;
-  ctx.body = { message: 'User signed up successfully' };
+  ctx.body = newAuthUserWithoutPassword;
 };
 
 export const signIn = async (ctx: Context, body: AuthUser) => {
   const authRepository = AppDataSource.getRepository(AuthUser);
 
-  const existingUser = await authRepository.findOneBy({ username: body.username });
+  const existingUser = await authRepository.findOneBy({ email: body.email });
 
   if (!existingUser) {
     ctx.status = 404;
@@ -74,9 +76,12 @@ export const signIn = async (ctx: Context, body: AuthUser) => {
     ctx.body = 'Invalid credentials';
     return;
   }
+  const { password, ...existingUserWithoutPassword } = existingUser;
 
   const token = jwt.sign(
-    { id: existingUser.id, username: existingUser.username, role: existingUser.role },
+    {
+      ...existingUserWithoutPassword,
+    },
     config.jwtSecret,
     {
       expiresIn: '1h',
@@ -88,7 +93,7 @@ export const signIn = async (ctx: Context, body: AuthUser) => {
   });
 
   ctx.status = 200;
-  ctx.body = { message: 'User signed in successfully' };
+  ctx.body = existingUserWithoutPassword;
 };
 
 export const signOut = async (ctx: Context) => {
@@ -109,7 +114,7 @@ export const signOut = async (ctx: Context) => {
     });
 
     ctx.status = 200;
-    ctx.body = 'Successfully logged out';
+    ctx.body = '';
   } catch (err) {
     ctx.status = 400;
     ctx.body = 'Invalid token';
