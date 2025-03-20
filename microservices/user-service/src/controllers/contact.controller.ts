@@ -1,14 +1,14 @@
 import { Context } from 'koa';
 import { deleteContact, getContact, updateContact } from '../services/contact.service';
 
-export const getUserContact = async (ctx: Context) => {
+export const getContactController = async (ctx: Context) => {
   await getContact(ctx);
 };
 
-export const deleteUserContact = async (ctx: Context) => {
+export const deleteContactController = async (ctx: Context) => {
   await deleteContact(ctx);
 };
 
-export const updateUserContact = async (ctx: Context) => {
+export const updateContactController = async (ctx: Context) => {
   await updateContact(ctx);
 };

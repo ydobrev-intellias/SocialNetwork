@@ -1,6 +1,10 @@
 import Router from 'koa-router';
 
-import { getUserProfile, uploadUserAvatar, uploadUserCover } from '../controllers/user.controller';
+import {
+  getProfileController,
+  uploadAvatarController,
+  uploadCoverController,
+} from '../controllers/user.controller';
 import koaBody from 'koa-body';
 import path from 'path';
 
@@ -8,7 +12,7 @@ const router = new Router();
 
 const uploadDir = path.join(__dirname, '../../uploads');
 
-router.get('/:userId/profile', getUserProfile);
+router.get('/:userId/profile', getProfileController);
 router.post(
   '/:userId/avatar',
   koaBody({
@@ -18,7 +22,7 @@ router.post(
       keepExtensions: true,
     },
   }),
-  uploadUserAvatar,
+  uploadAvatarController,
 );
 
 router.post(
@@ -30,7 +34,7 @@ router.post(
       keepExtensions: true,
     },
   }),
-  uploadUserCover,
+  uploadCoverController,
 );
 
 export default router;

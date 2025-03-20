@@ -1,5 +1,6 @@
 import { SchemaObject } from 'ajv';
 
+
 export const updateContactSchema: SchemaObject = {
   type: 'object',
   properties: {
