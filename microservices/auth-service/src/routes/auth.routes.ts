@@ -13,9 +13,9 @@ const router = new Router();
 
 router.get('/validate', validateRequest);
 
-router.post('/sign-up', validateSchema(authUserSchema), signUpController);
+router.post('/sign-up', validateSchema(signUpSchema), signUpController);
 
-router.post('/sign-in', validateSchema(authUserSchema), signInController);
+router.post('/sign-in', validateSchema(signInSchema), signInController);
 
 router.post('/sign-out', signOutController);
 
