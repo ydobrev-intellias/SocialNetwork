@@ -1,4 +1,5 @@
 import Header from './layout/Header';
+import ActivityWall from './views/ActivityWall/ActivityWall';
 import GuestRoute from './views/GuestRoute/GuestRoute';
 
 import ProfilePage from './views/ProfilePage/ProfilePage';
