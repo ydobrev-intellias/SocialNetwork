@@ -73,6 +73,31 @@ export const signOut = createAsyncThunk('user/signOut', async () => {
   }
 });
 
+export const getProfile = createAsyncThunk(
+  'user/getProfile',
+  async ({ userId }: { userId?: string }, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+    const isOwnProfile = !userId;
+
+    console.log('isOwnProfile', isOwnProfile);
+
+    try {
+      console.log('route', `${API_USERS_URL}/${userId ?? state.auth.user?.id}`);
+      const response = await axios.get(`${API_USERS_URL}/${userId ?? state.auth.user?.id}`, {
+        withCredentials: true,
+      });
+      console.log('Get profile response', response);
+
+      return { data: response.data, isOwnProfile };
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error.response?.data);
+        // handleError(error, rejectWithValue, dispatch);
+      }
+    }
+  },
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -122,6 +147,19 @@ const authSlice = createSlice({
         state.status = 'idle';
         state.user = null;
         state.isAuthenticated = false;
+      })
+      .addCase(getProfile.fulfilled, (state, action: PayloadAction<any>) => {
+        console.log('Payload', action.payload);
+        console.log('User', state.user);
+        if (!action.payload?.isOwnProfile) {
+          return;
+        }
+        state.user = action.payload?.data;
+
+        if (state.user) {
+          state.user.avatarPath = action.payload?.data?.avatarPath ?? '';
+          state.user.coverPath = action.payload?.data?.coverPath ?? '';
+        }
       })
   },
 });
