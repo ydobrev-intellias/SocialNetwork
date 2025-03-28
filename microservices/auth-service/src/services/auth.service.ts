@@ -3,19 +3,18 @@ import bcrypt from 'bcryptjs';
 import { config } from '../../config';
 import jwt from 'jsonwebtoken';
 import { Context } from 'koa';
-import { publishMessage } from '../rabbitmq/publisher';
 import { AppDataSource } from '../data-source';
 import redis from '../redis/client';
+import axios from 'axios';
 
-export const signUp = async (ctx: Context, body: AuthUser) => {
+export const signUp = async (ctx: Context) => {
+  const body = ctx.request.body as AuthUser;
   const authRepository = AppDataSource.getRepository(AuthUser);
 
   const existingUser = await authRepository.findOneBy({ email: body.email });
 
   if (existingUser) {
-    ctx.status = 400;
-    ctx.body = 'User already exists!';
-    return;
+    ctx.throw(400, 'User already exists!');
   }
 
   const hashedPassword = await bcrypt.hash(body.password, config.saltRounds);
@@ -30,15 +29,7 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
 
   const { password, ...newAuthUserWithoutPassword } = newAuthUser;
 
-  await publishMessage(
-    config.rabbitmqQueueName,
-    JSON.stringify({
-      data: {
-        ...newAuthUserWithoutPassword,
-      },
-      type: 'USER_SIGNUP',
-    }),
-  );
+  await axios.post('http://user-service:4002/', newAuthUser, { withCredentials: true });
 
   const token = jwt.sign(
     {
@@ -52,29 +43,26 @@ export const signUp = async (ctx: Context, body: AuthUser) => {
 
   ctx.cookies.set('jwt', token, {
     maxAge: 3600000,
+    httpOnly: true,
   });
 
-  ctx.status = 202;
-  ctx.body = newAuthUserWithoutPassword;
+  return { ...newAuthUserWithoutPassword };
 };
 
-export const signIn = async (ctx: Context, body: AuthUser) => {
+export const signIn = async (ctx: Context) => {
+  const body = ctx.request.body as AuthUser;
   const authRepository = AppDataSource.getRepository(AuthUser);
 
   const existingUser = await authRepository.findOneBy({ email: body.email });
 
   if (!existingUser) {
-    ctx.status = 404;
-    ctx.body = 'User not found';
-    return;
+    ctx.throw(404, 'User not found');
   }
 
   const isPasswordValid = await bcrypt.compare(body.password, existingUser.password);
 
   if (!isPasswordValid) {
-    ctx.status = 401;
-    ctx.body = 'Invalid credentials';
-    return;
+    ctx.throw(401, 'Invalid credentials');
   }
   const { password, ...existingUserWithoutPassword } = existingUser;
 
@@ -90,33 +78,25 @@ export const signIn = async (ctx: Context, body: AuthUser) => {
 
   ctx.cookies.set('jwt', token, {
     maxAge: 3600000,
+    httpOnly: true,
   });
 
-  ctx.status = 200;
-  ctx.body = existingUserWithoutPassword;
+  return { ...existingUserWithoutPassword };
 };
 
 export const signOut = async (ctx: Context) => {
   const token = ctx.cookies.get('jwt');
 
-  try {
-    const decoded = jwt.verify(token!, config.jwtSecret);
-    if (!decoded) {
-      ctx.status = 400;
-      ctx.body = 'Invalid token';
-      return;
-    }
+  const decoded = jwt.verify(token!, config.jwtSecret);
 
-    await redis.setex(`blacklisted:${token}`, config.jwtExpiration, token!);
-
-    ctx.cookies.set('jwt', '', {
-      maxAge: 0,
-    });
-
-    ctx.status = 200;
-    ctx.body = '';
-  } catch (err) {
-    ctx.status = 400;
-    ctx.body = 'Invalid token';
+  if (!decoded) {
+    ctx.throw(400, 'Invalid token');
   }
+
+  await redis.setex(`blacklisted:${token}`, config.jwtExpiration, token!);
+
+  ctx.cookies.set('jwt', '', {
+    maxAge: 0,
+  });
+  return {};
 };
