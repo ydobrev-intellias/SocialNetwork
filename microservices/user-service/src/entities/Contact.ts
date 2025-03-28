@@ -1,10 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './User';
-
-export enum Type {
-  PHONE = 'phone',
-  LINKEDIN = 'linkedin',
-}
+import { Type } from '../types/contact';
 
 @Entity('contacts')
 export class Contact {
@@ -14,6 +10,6 @@ export class Contact {
   type: Type;
   @Column()
   value: string;
-  @ManyToOne(() => User, (user) => user.contacts)
+  @ManyToOne(() => User, (user) => user.contacts, { onDelete: 'CASCADE' })
   user: User;
 }

@@ -1,18 +1,16 @@
 import { Context, Next } from 'koa';
 import { schemaValidator } from '../validators/schema.validator';
+import { SchemaObject } from 'ajv';
 
-export const validateSchema = (schema: object) => {
+export const validateSchema = (schema: SchemaObject) => {
   return async (ctx: Context, next: Next) => {
     const validator = schemaValidator(schema);
+
     const invalid = validator(ctx.request.body);
 
     if (invalid) {
-      ctx.status = 400;
-      ctx.body = {
-        message: 'Invalid request data',
-        errors: invalid,
-      };
-      return;
+      console.error(invalid);
+      ctx.throw(400, invalid);
     }
 
     await next();

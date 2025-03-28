@@ -1,13 +1,51 @@
 import { Context } from 'koa';
-import { getProfile, uploadAvatar, uploadCover } from '../services/user.service';
+import {
+  createUser,
+  deleteUser,
+  getProfile,
+  updateUser,
+  uploadAvatar,
+  uploadCover,
+} from '../services/user.service';
 
 export const getProfileController = async (ctx: Context) => {
-  await getProfile(ctx);
+  const profile = await getProfile(ctx);
+
+  ctx.status = 200;
+  ctx.body = profile;
 };
 
 export const uploadAvatarController = async (ctx: Context) => {
-  await uploadAvatar(ctx);
+  const result = await uploadAvatar(ctx);
+
+  ctx.status = 200;
+  ctx.body = result;
 };
+
 export const uploadCoverController = async (ctx: Context) => {
-  await uploadCover(ctx);
+  const result = await uploadCover(ctx);
+
+  ctx.status = 200;
+  ctx.body = result;
+};
+
+export const createUserController = async (ctx: Context) => {
+  const user = await createUser(ctx);
+
+  ctx.status = 200;
+  ctx.body = user;
+};
+
+export const updateUserController = async (ctx: Context) => {
+  const user = await updateUser(ctx);
+
+  ctx.status = 200;
+  ctx.body = user;
+};
+
+export const deleteUserController = async (ctx: Context) => {
+  await deleteUser(ctx);
+
+  ctx.status = 200;
+  ctx.body = {};
 };
