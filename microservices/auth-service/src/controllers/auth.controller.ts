@@ -1,17 +1,34 @@
 import { Context } from 'koa';
-import { signUp, signIn, signOut } from '../services/auth.service';
-import { AuthUser } from '../entities/AuthUser';
+import { signUp, signIn, signOut, updateAuthUser, deleteAuthUser } from '../services/auth.service';
 
 export const signUpController = async (ctx: Context) => {
-  const body = ctx.request.body as AuthUser;
-  await signUp(ctx, body);
+  const result = await signUp(ctx);
+
+  ctx.status = 202;
+  ctx.body = result;
 };
 
 export const signInController = async (ctx: Context) => {
-  const body = ctx.request.body as AuthUser;
-  await signIn(ctx, body);
+  const result = await signIn(ctx);
+
+  ctx.status = 202;
+  ctx.body = result;
 };
 
 export const signOutController = async (ctx: Context) => {
-  await signOut(ctx);
+  const result = await signOut(ctx);
+
+  ctx.status = 200;
+  ctx.body = result;
+};
+export const updateAuthUserController = async (ctx: Context) => {
+  const result = await updateAuthUser(ctx);
+  ctx.status = 200;
+  ctx.body = result;
+};
+
+export const deleteAuthUserController = async (ctx: Context) => {
+  await deleteAuthUser(ctx);
+  ctx.status = 200;
+  ctx.body = {};
 };
