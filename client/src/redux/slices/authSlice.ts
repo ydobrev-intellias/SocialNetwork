@@ -3,6 +3,12 @@ import { createAsyncThunk, createSlice, current, PayloadAction } from '@reduxjs/
 import { API_AUTH_URL, API_USERS_URL } from '../../config';
 import { RootState } from '../store';
 
+interface Contact {
+  id: string;
+  type: string;
+  value: string;
+}
+
 interface User {
   id: string;
   email: string;
@@ -10,6 +16,7 @@ interface User {
   username: string;
   avatarPath: string | null;
   coverPath: string | null;
+  contacts: Contact[];
 }
 
 interface AuthState {
@@ -73,6 +80,36 @@ export const signOut = createAsyncThunk('user/signOut', async () => {
   }
 });
 
+export const uploadImage = createAsyncThunk(
+  'user/uploadImage',
+  async ({ type, file }: { type: string; file: any }, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+
+    try {
+      if (!state.auth.user) {
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append(type, file);
+      const response = await axios.post(
+        `${API_USERS_URL}/${state.auth.user.id}/${type}`,
+        formData,
+        {
+          withCredentials: true,
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.log(error.response);
+        return rejectWithValue(error.response?.data);
+      }
+    }
+  },
+);
+
 export const getProfile = createAsyncThunk(
   'user/getProfile',
   async ({ userId }: { userId?: string }, { getState, rejectWithValue }) => {
@@ -93,6 +130,139 @@ export const getProfile = createAsyncThunk(
       if (error instanceof AxiosError) {
         return rejectWithValue(error.response?.data);
         // handleError(error, rejectWithValue, dispatch);
+      }
+    }
+  },
+);
+
+export const updateProfile = createAsyncThunk(
+  'user/updateProfile',
+  async (profileData: Partial<User>, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+    try {
+      console.log('');
+      if (!state.auth.user) {
+        return;
+      }
+      const response = await axios.patch(`${API_USERS_URL}/${state.auth.user.id}`, profileData, {
+        withCredentials: true,
+      });
+      console.log('Update profile response', response.data);
+
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error(error.response);
+        return rejectWithValue(error.response?.data);
+      }
+    }
+  },
+);
+
+export const deleteUser = createAsyncThunk(
+  'user/deleteUser',
+  async (_, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+
+    try {
+      if (!state.auth.user) {
+        return rejectWithValue('User not found');
+      }
+
+      await axios.delete(`${API_USERS_URL}/${state.auth.user.id}`, {
+        withCredentials: true,
+      });
+
+      return true;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.log(error.response);
+        return rejectWithValue(error.response?.data);
+      }
+    }
+  },
+);
+export const createContact = createAsyncThunk(
+  'user/createContact',
+  async (contactData: Omit<Contact, 'id'>, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+
+    try {
+      if (!state.auth.user) {
+        return rejectWithValue('User not found');
+      }
+
+      const existingContact = state.auth.user.contacts.find(
+        (contact) => contact.type === contactData.type,
+      );
+
+      if (existingContact) {
+        return rejectWithValue('Contact type already exists');
+      }
+
+      const response = await axios.post(
+        `${API_USERS_URL}/${state.auth.user.id}/contacts`,
+        contactData,
+        {
+          withCredentials: true,
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error.response?.data);
+      }
+    }
+  },
+);
+
+export const deleteContact = createAsyncThunk(
+  'user/deleteContact',
+  async (contactId: string, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+
+    try {
+      if (!state.auth.user) {
+        return rejectWithValue('User not found');
+      }
+
+      await axios.delete(`${API_USERS_URL}/${state.auth.user.id}/contacts/${contactId}`, {
+        withCredentials: true,
+      });
+
+      return contactId;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error.response?.data);
+        // handleError(error, rejectWithValue, dispatch);
+      }
+    }
+  },
+);
+
+export const updateContact = createAsyncThunk(
+  'user/updateContact',
+  async (contactData: Partial<Contact>, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+
+    try {
+      if (!state.auth.user) {
+        return rejectWithValue('User not found');
+      }
+
+      const response = await axios.patch(
+        `${API_USERS_URL}/${state.auth.user.id}/contacts/${contactData.id}`,
+        contactData,
+        {
+          withCredentials: true,
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error.response?.data);
       }
     }
   },
@@ -161,6 +331,27 @@ const authSlice = createSlice({
           state.user.coverPath = action.payload?.data?.coverPath ?? '';
         }
       })
+      .addCase(uploadImage.fulfilled, (state, action: PayloadAction<any>) => {
+        console.log('Payload', action.payload);
+        console.log('User', state.user);
+        if (state.user) {
+          state.user.avatarPath = action.payload?.avatarPath ?? '';
+          state.user.coverPath = action.payload?.coverPath ?? '';
+        }
+      })
+      .addCase(updateProfile.fulfilled, (state, action: PayloadAction<any>) => {
+        console.log('update profile fullfiled current state', current(state));
+        console.log('update profile fullfiled action.payload', action.payload);
+
+        state.user = { ...state.user, ...action.payload };
+      })
+      .addCase(deleteUser.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
+        state.error = action.payload as string;
+      });
   },
 });
 

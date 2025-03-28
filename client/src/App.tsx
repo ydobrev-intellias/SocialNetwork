@@ -1,6 +1,8 @@
 import Header from './layout/Header';
 import GuestRoute from './views/GuestRoute/GuestRoute';
 
+import ProfilePage from './views/ProfilePage/ProfilePage';
+
 import SignInForm from './views/SignInForm/SignInForm';
 import SignUpForm from './views/SignUpForm/SignUpForm';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -28,6 +30,8 @@ function App() {
               </GuestRoute>
             }
           />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:userId" element={<ProfilePage />} />
         </Routes>
       </div>
     </BrowserRouter>

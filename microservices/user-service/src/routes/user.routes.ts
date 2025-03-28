@@ -1,7 +1,10 @@
 import Router from 'koa-router';
 
 import {
+  createUserController,
+  deleteUserController,
   getProfileController,
+  updateUserController,
   uploadAvatarController,
   uploadCoverController,
 } from '../controllers/user.controller';
@@ -12,7 +15,11 @@ const router = new Router();
 
 const uploadDir = path.join(__dirname, '../../uploads');
 
-router.get('/:userId/profile', getProfileController);
+router.post('/', createUserController);
+router.patch('/:userId', updateUserController);
+router.delete('/:userId', deleteUserController);
+
+router.get('/:userId', getProfileController);
 router.post(
   '/:userId/avatar',
   koaBody({

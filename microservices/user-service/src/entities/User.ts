@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Contact } from './Contact';
+import { Follower } from './Follower';
 
 export enum Role {
   USER = 'user',
@@ -24,4 +25,10 @@ export class User {
   avatarPath: string;
   @Column({ nullable: true })
   coverPath: string;
+
+  @OneToMany(() => Follower, (follower) => follower.following)
+  followers: Follower[];
+
+  @OneToMany(() => Follower, (follower) => follower.follower)
+  following: Follower[];
 }

@@ -1,7 +1,4 @@
-import { SchemaObject } from 'ajv';
-
-
-export const updateContactSchema: SchemaObject = {
+export const updateContactSchema = {
   type: 'object',
   properties: {
     type: {
@@ -9,11 +6,11 @@ export const updateContactSchema: SchemaObject = {
     },
     value: { type: 'string' },
   },
-  required: [],
+  required: ['type', 'value'],
   additionalProperties: false,
 };
 
-export const createContactSchema: SchemaObject = {
+export const createContactSchema = {
   type: 'object',
   properties: {
     type: {
