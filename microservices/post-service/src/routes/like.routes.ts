@@ -3,8 +3,8 @@ import { likePostController, unlikePostController } from '../controllers/like.co
 
 const router = new Router();
 
-router.delete('/likes/:likeId', unlikePostController);
-
 router.post('/:postId/likes', likePostController);
+
+router.delete('/likes/:likeId', unlikePostController);
 
 export default router;
