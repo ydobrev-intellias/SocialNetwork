@@ -1,23 +1,22 @@
-import { SchemaObject } from 'ajv';
+import { JSONSchemaType } from 'ajv';
+import { CreatePostSchema, UpdatePostSchema } from '../types/post';
 
-export const createPostSchema: SchemaObject = {
+export const createPostSchema: JSONSchemaType<CreatePostSchema> = {
   type: 'object',
   properties: {
-    title: { type: 'string' },
     content: { type: 'string' },
     privacy: { enum: ['private', 'public'] },
   },
-  required: ['content', 'title'],
-  additionalProperties: false,
+  required: ['content'],
+  additionalProperties: true,
 };
 
-export const updatePostSchema: SchemaObject = {
+export const updatePostSchema: JSONSchemaType<UpdatePostSchema> = {
   type: 'object',
   properties: {
-    title: { type: 'string' },
     content: { type: 'string' },
     privacy: { enum: ['private', 'public'] },
   },
   required: [],
-  additionalProperties: false,
+  additionalProperties: true,
 };

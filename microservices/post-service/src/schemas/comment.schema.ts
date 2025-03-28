@@ -1,6 +1,7 @@
-import { SchemaObject } from 'ajv';
+import { JSONSchemaType } from 'ajv';
+import { CreateCommentSchema, UpdateCommentSchema } from '../types/comment';
 
-export const createCommentSchema: SchemaObject = {
+export const createCommentSchema: JSONSchemaType<CreateCommentSchema> = {
   type: 'object',
   properties: {
     content: { type: 'string' },
@@ -9,7 +10,7 @@ export const createCommentSchema: SchemaObject = {
   additionalProperties: false,
 };
 
-export const updateCommentSchema: SchemaObject = {
+export const updateCommentSchema: JSONSchemaType<UpdateCommentSchema> = {
   type: 'object',
   properties: {
     content: { type: 'string' },
