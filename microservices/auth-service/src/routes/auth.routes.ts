@@ -5,6 +5,8 @@ import {
   signInController,
   signUpController,
   signOutController,
+  updateAuthUserController,
+  deleteAuthUserController,
 } from '../controllers/auth.controller';
 import { validateRequest } from '../middlewares/validateRequest';
 import { signInSchema, signUpSchema } from '../schemas/authUser.schema';
@@ -18,5 +20,9 @@ router.post('/sign-up', validateSchema(signUpSchema), signUpController);
 router.post('/sign-in', validateSchema(signInSchema), signInController);
 
 router.post('/sign-out', signOutController);
+
+router.patch('/users/:userId', updateAuthUserController);
+
+router.delete('/users/:userId', deleteAuthUserController);
 
 export default router;

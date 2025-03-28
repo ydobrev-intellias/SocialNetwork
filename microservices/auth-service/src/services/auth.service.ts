@@ -100,3 +100,42 @@ export const signOut = async (ctx: Context) => {
   });
   return {};
 };
+
+export const deleteAuthUser = async (ctx: Context) => {
+  const { userId } = ctx.params;
+
+  const userDataHeader = ctx.headers['x-auth-user-data'];
+  console.log(typeof userDataHeader);
+  if (!userDataHeader) {
+    ctx.throw(401, 'Missing authentication data');
+  }
+
+  const authRepository = AppDataSource.getRepository(AuthUser);
+  const authUser = await authRepository.findOne({ where: { id: userId } });
+
+  if (!authUser) {
+    ctx.throw(400, 'Auth user does not exist');
+  }
+
+  await authRepository.remove(authUser);
+};
+
+export const updateAuthUser = async (ctx: Context) => {
+  const body = ctx.request.body as Partial<AuthUser>;
+  const { userId } = ctx.params;
+
+  const userDataHeader = ctx.headers['x-auth-user-data'];
+  if (!userDataHeader) {
+    ctx.throw(401, 'Missing authentication data');
+  }
+
+  const authRepository = AppDataSource.getRepository(AuthUser);
+  const authUser = await authRepository.findOne({ where: { id: userId } });
+  if (!authUser) {
+    ctx.throw(400, 'Auth user does not exist');
+  }
+
+  Object.assign(authUser, body);
+
+  await authRepository.save(authUser);
+};
