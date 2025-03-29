@@ -131,6 +131,23 @@ services:
     networks:
       - app_network
 
+  search-service:
+    container_name: search-service
+    build:
+      context: ./microservices/search-service
+      args:
+        BUILD_ENV: development
+    volumes:
+      - ./microservices/search-service:/app
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${SEARCH_SERVICE_PORT}
+    command: sh -c "npm install && npm run dev"
+    networks:
+      - app_network
+
   post-service:
     container_name: post-service
     build:
