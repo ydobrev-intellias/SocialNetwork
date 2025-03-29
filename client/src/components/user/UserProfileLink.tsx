@@ -5,25 +5,37 @@ import { CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 
-const UserProfileLink = ({ activity, isPost = false }: { activity: any; isPost?: boolean }) => {
+const UserProfileLink = ({
+  activity,
+  user,
+  isPost = false,
+}: {
+  activity?: any;
+  user?: any;
+  isPost?: boolean;
+}) => {
   return (
-    <Link className="block" to={`/profile/${activity?.ownerProfile?.id}`}>
+    <Link className="block" to={`/profile/${activity ? activity?.ownerProfile?.id : user?.id}`}>
       <CardHeader className="flex flex-row items-center space-x-3">
         <Avatar>
           <AvatarImage
             src={
-              activity?.ownerProfile?.avatarPath
-                ? `${API_USERS_URL}${activity?.ownerProfile?.avatarPath}`
-                : undefined
+              activity
+                ? activity?.ownerProfile?.avatarPath
+                  ? `${API_USERS_URL}${activity?.ownerProfile?.avatarPath}`
+                  : undefined
+                : (user?.avatarPath ?? undefined)
             }
           />
           <AvatarFallback>
-            {activity?.ownerProfile?.username[0]?.toLocaleUpperCase()}
+            {activity
+              ? (activity?.ownerProfile?.username[0]?.toLocaleUpperCase() ?? undefined)
+              : (user?.username[0]?.toLocaleUpperCase() ?? undefined)}
           </AvatarFallback>
         </Avatar>
         <div>
           <CardTitle className="text-sm font-semibold">
-            {activity?.ownerProfile?.username}
+            {activity ? activity?.ownerProfile?.username : user?.username}
           </CardTitle>
           {isPost && (
             <p className="text-xs text-gray-500">
