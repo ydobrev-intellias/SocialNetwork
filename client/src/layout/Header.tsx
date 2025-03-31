@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, MessageSquare } from 'lucide-react';
 import { AppDispatch, RootState } from '@/redux/store';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import { getProfile, signOut } from '@/redux/slices/authSlice';
 import { API_SEARCH_URL, API_USERS_URL } from '@/config';
 import { useEffect, useState } from 'react';

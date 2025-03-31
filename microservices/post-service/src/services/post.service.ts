@@ -6,7 +6,7 @@ import { deleteFile } from '../utils/deleteFile';
 import axios from 'axios';
 import { Like } from '../entities/Like';
 import { Comment } from '../entities/Comment';
-import { PostPrivacy } from '../types/post';
+import { PostPrivacy } from '../types/common';
 
 export const createPost = async (ctx: Context) => {
   const body = ctx.request.body as Post;
@@ -209,6 +209,7 @@ export const getActivityWall = async (ctx: Context) => {
 
 export const createRepost = async (ctx: Context) => {
   const { postId } = ctx.params;
+  const { content, privacy } = ctx.request.body as any;
   const { id: ownerId } = JSON.parse(ctx.headers['x-auth-user-data'] as string);
 
   const postRepository = AppDataSource.getRepository(Post);
@@ -236,6 +237,8 @@ export const createRepost = async (ctx: Context) => {
   repost = postRepository.create({
     ownerId,
     originalPost,
+    content,
+    privacy,
     isRepost: true,
   });
   const ownerProfileResponse = await axios.get(`http://user-service:4002/${repost.ownerId}`, {

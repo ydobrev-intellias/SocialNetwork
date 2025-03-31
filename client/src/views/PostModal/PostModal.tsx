@@ -4,12 +4,10 @@ import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { createComment, updateComment, deleteComment } from '@/redux/slices/postSlice';
+import { createComment, updateComment } from '@/redux/slices/postSlice';
 import axios from 'axios';
-import { API_POSTS_URL, API_USERS_URL } from '@/config';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { API_POSTS_URL } from '@/config';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { format } from 'date-fns';
 import {
   DialogHeader,
   DialogFooter,
@@ -18,19 +16,20 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import UserProfileLink from '@/components/user/UserProfileLink';
+import { format } from 'date-fns';
+import CommentList from '../CommentList/CommentList';
 
-interface CommentSectionProps {
+interface PostModalProps {
   postId: string;
   onClose: () => void;
-  postOwnerId: string;
 }
 
-export default function CommentSection({ postId, onClose }: CommentSectionProps) {
+export default function PostModal({ postId, onClose }: PostModalProps) {
   const [comments, setComments] = useState<any[]>([]);
   const [content, setContent] = useState('');
   const [originalPost, setOriginalPost] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [editingComment, setEditingComment] = useState<any>(null);
   const [editContent, setEditContent] = useState('');
   const getComments = async () => {
@@ -49,33 +48,30 @@ export default function CommentSection({ postId, onClose }: CommentSectionProps)
       const response = await axios.get(`${API_POSTS_URL}/${postId}`, {
         withCredentials: true,
       });
+      console.log('PostModal post', response.data);
       setOriginalPost(response.data);
     } catch (error) {
       console.error('Error fetching post:', error);
     }
   };
+
   useEffect(() => {
     getComments();
     getPost();
-  }, [postId]);
+  }, [postId, setOriginalPost]);
 
-  const createCommentHandler = async (e: any) => {
+  const createCommentHandler = async () => {
     if (!content.trim()) return;
     await dispatch(createComment({ content, postId }));
     setContent('');
     getComments();
   };
 
-  const updateCommentHandler = async (e: any) => {
+  const updateCommentHandler = async () => {
     if (!editContent.trim()) return;
     await dispatch(updateComment({ commentId: editingComment.id, content: editContent }));
     setEditingComment(null);
     setEditContent('');
-    getComments();
-  };
-
-  const deleteCommentHandler = async (comment: any) => {
-    await dispatch(deleteComment({ commentId: comment.id }));
     getComments();
   };
 
@@ -88,8 +84,7 @@ export default function CommentSection({ postId, onClose }: CommentSectionProps)
         className="bg-white w-[800px] max-h-[80vh] p-6 rounded-lg shadow-lg overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Comments</h3>
+        <div className="flex justify-end items-center">
           <button onClick={onClose}>
             <X size={20} />
           </button>
@@ -97,9 +92,23 @@ export default function CommentSection({ postId, onClose }: CommentSectionProps)
 
         {originalPost && (
           <div className="mt-4 p-3 border border-gray-300 bg-gray-100 rounded-md">
-            <UserProfileLink activity={originalPost} />
+            <CardHeader className="flex flex-row items-center space-x-3">
+              <UserProfileLink activity={originalPost} isPost={true} />
+              <div>
+                <CardTitle className="text-sm font-semibold">
+                  {originalPost?.ownerProfile?.username}
+                </CardTitle>
+                <p className="text-xs text-gray-500">
+                  {originalPost?.updatedAt
+                    ? `Last updated: ${format(new Date(originalPost.updatedAt), 'dd MMM yyyy, HH:mm')}`
+                    : `Posted on: ${format(new Date(originalPost.createdAt), 'dd MMM yyyy, HH:mm')}`}
+                </p>
+              </div>
+            </CardHeader>
+
             <CardContent>
               <p className="text-gray-700">{originalPost.content}</p>
+
               {originalPost.mediaPath && (
                 <div className="mt-3">
                   {originalPost.mediaPath.endsWith('.mp4') ||
@@ -120,40 +129,12 @@ export default function CommentSection({ postId, onClose }: CommentSectionProps)
           </div>
         )}
 
-        <div className="max-h-60 overflow-y-auto mt-4 space-y-2">
-          {comments.length > 0 ? (
-            comments.map((comment: any) => {
-              const isOwner = comment.ownerId === user?.id;
-              return (
-                <div key={comment.id} className="flex items-start space-x-2 border-b pb-2">
-                  <UserProfileLink activity={comment} />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold">{comment?.ownerProfile?.username}</p>
-                    <p className="text-sm text-gray-700">{comment.content}</p>
-                  </div>
-                  {isAuthenticated && isOwner && (
-                    <>
-                      <Button size="sm" onClick={() => deleteCommentHandler(comment)}>
-                        Delete
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setEditingComment(comment);
-                          setEditContent(comment.content);
-                        }}
-                      >
-                        Update
-                      </Button>
-                    </>
-                  )}
-                </div>
-              );
-            })
-          ) : (
-            <p className="text-sm text-gray-500">No comments yet.</p>
-          )}
-        </div>
+        <CommentList
+          comments={comments}
+          getComments={getComments}
+          setEditContent={setEditContent}
+          setEditingComment={setEditingComment}
+        />
 
         {isAuthenticated && (
           <div className="mt-4 flex items-center space-x-2">

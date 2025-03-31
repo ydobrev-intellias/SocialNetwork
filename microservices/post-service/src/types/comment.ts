@@ -1,11 +1,3 @@
-export interface CreateCommentSchema {
+export interface CreateOrUpdateCommentSchema {
   content: string;
-}
-
-export interface UpdateCommentSchema {
-  content: string;
-}
-export enum PostPrivacy {
-  PUBLIC = 'public',
-  PRIVATE = 'private',
 }

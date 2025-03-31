@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function ProfilePage() {
   const { user: authUser } = useSelector((state: RootState) => state.auth);
@@ -49,12 +49,14 @@ export default function ProfilePage() {
     username: user?.username || '',
     email: user?.email || '',
   });
+  const navigate = useNavigate();
   const [newContact, setNewContact] = useState({ type: '', value: '' });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const handleDeleteProfile = async () => {
-    await dispatch(deleteUser());
+    await dispatch(deleteUser({}));
     setIsDeleteModalOpen(false);
+    navigate('/');
   };
 
   const handleImageUpload = async (
@@ -85,7 +87,7 @@ export default function ProfilePage() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await dispatch(updateProfile(formData));
+    await dispatch(updateProfile({ profileData: formData }));
     setIsEditingProfile(false);
   };
 

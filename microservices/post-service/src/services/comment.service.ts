@@ -52,7 +52,7 @@ export const getComments = async (ctx: Context) => {
   }
   const comments = post.comments;
 
-  if (comments.length > 0) {
+  if (comments?.length > 0) {
     for (let comment of comments) {
       const response = await axios.get(`http://user-service:4002/${comment.ownerId}`, {
         withCredentials: true,
