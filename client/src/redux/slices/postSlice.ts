@@ -1,18 +1,19 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { API_POSTS_URL } from '../../config';
 import axios, { AxiosError } from 'axios';
-
-interface Post {}
+import { Status } from '@/types/common';
+import { CreatePost, CreateRepost, Post, UpdatePost } from '@/types/post';
+import { Like } from '@/types/like';
 
 interface PostState {
-  posts: any[] | null;
-  status: 'idle' | 'pending' | 'failed';
+  posts: Post[] | null;
+  status: Status;
   error?: string;
 }
 
 const initialState: PostState = {
   posts: null,
-  status: 'idle',
+  status: Status.IDLE,
 };
 
 export const getPosts = createAsyncThunk('post/getPosts', async (_, { rejectWithValue }) => {
@@ -30,15 +31,15 @@ export const getPosts = createAsyncThunk('post/getPosts', async (_, { rejectWith
 });
 export const createRepost = createAsyncThunk(
   'post/createRepost',
-  async ({ postId }: { postId: string }, { rejectWithValue }) => {
+  async (
+    { postId, repostData }: { postId: string; repostData: CreateRepost },
+    { rejectWithValue },
+  ) => {
     try {
-      const response = await axios.post(
-        `${API_POSTS_URL}/${postId}/reposts`,
-        {},
-        {
-          withCredentials: true,
-        },
-      );
+      console.log(`postSlice createRepost ${postId} ${repostData}`);
+      const response = await axios.post(`${API_POSTS_URL}/${postId}/reposts`, repostData, {
+        withCredentials: true,
+      });
       console.log('Response', response);
       return response.data;
     } catch (error) {
@@ -66,10 +67,7 @@ export const deletePost = createAsyncThunk(
 
 export const createPost = createAsyncThunk(
   'post/createPost',
-  async (
-    data: { content: string; file?: File; privacy: 'public' | 'private' },
-    { rejectWithValue },
-  ) => {
+  async (data: CreatePost, { rejectWithValue }) => {
     try {
       const formData = new FormData();
       formData.append('content', data.content);
@@ -97,18 +95,12 @@ export const createPost = createAsyncThunk(
 
 export const updatePost = createAsyncThunk(
   'post/updatePost',
-  async (
-    {
-      postId,
-      data,
-    }: { postId: string; data: { content: string; file?: File; privacy: 'public' | 'private' } },
-    { rejectWithValue },
-  ) => {
+  async ({ postId, data }: { postId: string; data: UpdatePost }, { rejectWithValue }) => {
     try {
       console.log('Update data', data);
       const formData = new FormData();
-      formData.append('content', data.content);
-      formData.append('privacy', data.privacy);
+      if (data.content) formData.append('content', data.content);
+      if (data.privacy) formData.append('privacy', data.privacy);
 
       if (data.file) {
         formData.append('file', data.file);
@@ -249,53 +241,54 @@ const postSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getPosts.pending, (state) => {
-        state.status = 'pending';
+        state.status = Status.PENDING;
       })
       .addCase(getPosts.fulfilled, (state, action: PayloadAction<any>) => {
-        state.status = 'idle';
+        state.status = Status.IDLE;
         state.posts = action.payload;
       })
       .addCase(getPosts.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = Status.FAILED;
         state.error = action.payload as string;
       })
       .addCase(createPost.pending, (state) => {
-        state.status = 'pending';
+        state.status = Status.PENDING;
       })
       .addCase(createPost.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.status = 'idle';
+        state.status = Status.IDLE;
         state.posts?.unshift(action.payload);
       })
       .addCase(createRepost.pending, (state) => {
-        state.status = 'pending';
+        state.status = Status.PENDING;
       })
       .addCase(createRepost.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.status = 'idle';
+        state.status = Status.IDLE;
         state.posts?.unshift(action.payload);
       })
-      .addCase(createComment.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.status = 'idle';
+      .addCase(createComment.fulfilled, (state) => {
+        state.status = Status.IDLE;
       })
-      .addCase(updateComment.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.status = 'idle';
+      .addCase(updateComment.fulfilled, (state) => {
+        state.status = Status.IDLE;
       })
-      .addCase(deleteComment.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.status = 'idle';
+      .addCase(deleteComment.fulfilled, (state) => {
+        state.status = Status.IDLE;
       })
-      .addCase(getComments.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.status = 'idle';
+      .addCase(getComments.fulfilled, (state) => {
+        state.status = Status.IDLE;
       })
 
       .addCase(toggleLike.fulfilled, (state, action: PayloadAction<any>) => {
         const { postId, like, isLiked, likeId } = action.payload;
-        const post = state?.posts!.find((p: any) => p.id === postId);
+        const post = state?.posts!.find((post: Post) => post.id === postId);
         if (!post) return;
 
-        if (isLiked) {
-          post.likes.push(like);
-        } else {
-          post.likes = post.likes.filter((l: any) => l.id !== likeId);
-        }
+        if (post.likes)
+          if (isLiked) {
+            post.likes.push(like);
+          } else {
+            post.likes = post.likes.filter((like: Like) => like.id !== likeId);
+          }
       });
   },
 });
