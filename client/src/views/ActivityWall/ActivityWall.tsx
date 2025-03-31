@@ -8,22 +8,27 @@ import { getPosts } from '@/redux/slices/postSlice';
 import CreatePostModal from '../CreatePostModal/CreatePostModal';
 
 import PostsSection from '../PostsSection/PostsSection';
+import { Mode } from '@/types/common';
+import CreateRepostModal from '../CreateRepostModal/CreateRepostModal';
 
 export default function ActivityWall() {
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   const [isModalOpen, setModalOpen] = useState(false);
-  const [mode, setMode] = useState<'create' | 'update'>('create');
+  const [mode, setMode] = useState<Mode>(Mode.CREATE);
   const [postToEdit, setPostToEdit] = useState<any | null>(null);
+  const [isRepost, setIsRepost] = useState(false);
+  const [originalPostId, setOriginalPostId] = useState<string>('');
 
   useEffect(() => {
     dispatch(getPosts());
   }, [dispatch]);
 
   const handleCreatePost = () => {
-    setMode('create');
+    setMode(Mode.CREATE);
     setModalOpen(true);
+    setIsRepost(false);
   };
 
   return (
@@ -33,24 +38,59 @@ export default function ActivityWall() {
           Create Post
         </Button>
       )}
-      <PostsSection setPostToEdit={setPostToEdit} setModalOpen={setModalOpen} setMode={setMode} />
-
-      <CreatePostModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        onCreateOrUpdatePost={(post: any) => {
-          if (mode === 'create') {
-            console.log('Create Post:', post);
-            dispatch(getPosts());
-          } else if (mode === 'update' && postToEdit?.id) {
-            console.log('Update Post:', post);
-            dispatch(getPosts());
-          }
-          setModalOpen(false);
-        }}
-        mode={mode}
-        postData={postToEdit}
+      <PostsSection
+        setPostToEdit={setPostToEdit}
+        setModalOpen={setModalOpen}
+        setMode={setMode}
+        setIsRepost={setIsRepost}
+        setOriginalPostId={setOriginalPostId}
       />
+
+      {isRepost ? (
+        <CreateRepostModal
+          isOpen={isModalOpen}
+          onClose={async () => {
+            await dispatch(getPosts());
+            setModalOpen(false);
+            setMode(Mode.CREATE);
+            setPostToEdit('');
+          }}
+          onCreateOrUpdateRepost={() => {
+            if (mode === Mode.CREATE) {
+              dispatch(getPosts());
+            } else if (Mode.UPDATE && postToEdit?.id) {
+              dispatch(getPosts());
+            }
+            setModalOpen(false);
+            setPostToEdit('');
+          }}
+          originalPostId={originalPostId}
+          mode={mode}
+          postData={postToEdit}
+        />
+      ) : (
+        <CreatePostModal
+          isOpen={isModalOpen}
+          onClose={async () => {
+            dispatch(getPosts());
+            setModalOpen(false);
+            setMode(Mode.CREATE);
+            setPostToEdit('');
+          }}
+          onCreateOrUpdatePost={() => {
+            console.log('POST ACTION');
+            if (mode === Mode.CREATE) {
+              dispatch(getPosts());
+            } else if (Mode.UPDATE && postToEdit?.id) {
+              dispatch(getPosts());
+            }
+            setModalOpen(false);
+            setPostToEdit('');
+          }}
+          mode={mode}
+          postData={postToEdit}
+        />
+      )}
     </div>
   );
 }

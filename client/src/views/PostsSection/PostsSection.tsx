@@ -1,11 +1,26 @@
 import { Ghost } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import Post from '../Post/Post';
 
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { RootState } from '@/redux/store';
 
-export default function PostsSection({ setPostToEdit, setModalOpen, setMode }: any) {
+import { Post } from '@/types/post';
+import { Mode } from '@/types/common';
+import PostCard from '../PostCard/PostCard';
+interface PostsSectionProps {
+  setPostToEdit: any;
+  setModalOpen: Dispatch<SetStateAction<boolean>>;
+  setMode: Dispatch<SetStateAction<Mode>>;
+  setIsRepost: Dispatch<SetStateAction<boolean>>;
+  setOriginalPostId: Dispatch<SetStateAction<string>>;
+}
+export default function PostsSection({
+  setPostToEdit,
+  setModalOpen,
+  setMode,
+  setIsRepost,
+  setOriginalPostId,
+}: PostsSectionProps) {
   const { status, posts } = useSelector((state: RootState) => state.post);
   const [isCommentsOpen, setCommentsOpen] = useState(false);
   if (status === 'pending') {
@@ -15,8 +30,8 @@ export default function PostsSection({ setPostToEdit, setModalOpen, setMode }: a
   return (
     <>
       {posts && posts.length > 0 ? (
-        posts.map((post: any) => (
-          <Post
+        posts.map((post: Post) => (
+          <PostCard
             key={post.id}
             post={post}
             setCommentsOpen={setCommentsOpen}
@@ -24,6 +39,9 @@ export default function PostsSection({ setPostToEdit, setModalOpen, setMode }: a
             setMode={setMode}
             setPostToEdit={setPostToEdit}
             isCommentsOpen={isCommentsOpen}
+            setIsRepost={setIsRepost}
+            setOriginalPostId={setOriginalPostId}
+            isWall={true}
           />
         ))
       ) : (
