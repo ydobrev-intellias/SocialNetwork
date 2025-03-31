@@ -9,7 +9,7 @@ import {
   deleteUserActivityController,
 } from '../controllers/post.controller';
 import { validateSchema } from '../middlewares/validateSchema';
-import { createPostSchema, updatePostSchema } from '../schemas/post.schema';
+import { createPostSchema, createRepostSchema, updatePostSchema } from '../schemas/post.schema';
 
 const router = new Router();
 
@@ -25,6 +25,6 @@ router.delete('/:postId', deletePostController);
 
 router.patch('/:postId', validateSchema(updatePostSchema), updatePostController);
 
-router.post('/:postId/reposts', validateSchema(createPostSchema), createRepostController);
+router.post('/:postId/reposts', validateSchema(createRepostSchema), createRepostController);
 
 export default router;

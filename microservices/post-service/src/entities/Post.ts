@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Like } from './Like';
 import { Comment } from './Comment';
-import { PostPrivacy } from '../types/post';
+import { PostPrivacy } from '../types/common';
 
 @Entity('posts')
 export class Post {

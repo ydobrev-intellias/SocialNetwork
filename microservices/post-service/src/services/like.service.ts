@@ -29,10 +29,6 @@ export const likePost = async (ctx: Context) => {
     ctx.throw(404, `Post with ID ${postId} not found`);
   }
 
-  if (post.isRepost && post.originalPost) {
-    post = post.originalPost;
-  }
-
   const likeRepository = AppDataSource.getRepository(Like);
   const existingLike = await likeRepository.findOne({
     where: {
