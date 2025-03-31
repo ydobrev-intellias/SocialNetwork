@@ -1,21 +1,29 @@
 import Router from 'koa-router';
 import {
+  createCommentController,
   deleteCommentController,
   getCommentsController,
   updateCommentController,
 } from '../controllers/comment.controller';
-import { createPostController } from '../controllers/post.controller';
 import { validateSchema } from '../middlewares/validateSchema';
-import { createCommentSchema, updateCommentSchema } from '../schemas/comment.schema';
+import { createOrUpdateCommentSchema } from '../schemas/comment.schema';
 
 const router = new Router();
 
 router.get('/:postId/comments', getCommentsController);
 
-router.post('/:postId/comments', validateSchema(createCommentSchema), createPostController);
+router.post(
+  '/:postId/comments',
+  validateSchema(createOrUpdateCommentSchema),
+  createCommentController,
+);
 
-router.patch('/comments/:commentId', validateSchema(updateCommentSchema), updateCommentController);
+router.patch(
+  '/comments/:commentId',
+  validateSchema(createOrUpdateCommentSchema),
+  updateCommentController,
+);
 
-router.patch('/comments/:commentId', deleteCommentController);
+router.delete('/comments/:commentId', deleteCommentController);
 
 export default router;

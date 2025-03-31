@@ -7,6 +7,7 @@ import koaBody from 'koa-body';
 import path from 'path';
 import fs from 'fs';
 import serve from 'koa-static';
+import { errorHandler } from './middlewares/errorHandler';
 
 const app = new Koa();
 
@@ -17,6 +18,8 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 connectDB();
+app.use(cors({ credentials: true }));
+app.use(errorHandler);
 app.use(
   koaBody({
     multipart: true,
@@ -28,7 +31,6 @@ app.use(
     },
   }),
 );
-app.use(cors());
 
 app.use(serve(path.join(uploadDir)));
 

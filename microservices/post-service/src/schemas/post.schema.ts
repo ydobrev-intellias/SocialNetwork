@@ -1,23 +1,33 @@
-import { SchemaObject } from 'ajv';
+import { JSONSchemaType } from 'ajv';
+import { CreatePostSchema, UpdatePostSchema } from '../types/post';
+import { PostPrivacy } from '../types/common';
 
-export const createPostSchema: SchemaObject = {
+export const createPostSchema: JSONSchemaType<CreatePostSchema> = {
   type: 'object',
   properties: {
-    title: { type: 'string' },
     content: { type: 'string' },
-    privacy: { enum: ['private', 'public'] },
+    privacy: { type: 'string', enum: Object.values(PostPrivacy), nullable: true },
   },
-  required: ['content', 'title'],
-  additionalProperties: false,
+  required: ['content'],
+  additionalProperties: true,
 };
 
-export const updatePostSchema: SchemaObject = {
+export const updatePostSchema: JSONSchemaType<UpdatePostSchema> = {
   type: 'object',
   properties: {
-    title: { type: 'string' },
-    content: { type: 'string' },
-    privacy: { enum: ['private', 'public'] },
+    content: { type: 'string', nullable: true },
+    privacy: { type: 'string', enum: Object.values(PostPrivacy), nullable: true },
   },
   required: [],
+  additionalProperties: true,
+};
+
+export const createRepostSchema: JSONSchemaType<CreatePostSchema> = {
+  type: 'object',
+  properties: {
+    content: { type: 'string' },
+    privacy: { type: 'string', enum: Object.values(PostPrivacy), nullable: true },
+  },
+  required: ['content'],
   additionalProperties: false,
 };

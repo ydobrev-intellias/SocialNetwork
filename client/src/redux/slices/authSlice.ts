@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { createAsyncThunk, createSlice, current, PayloadAction } from '@reduxjs/toolkit';
 import { API_AUTH_URL, API_USERS_URL } from '../../config';
 import { RootState } from '../store';
+import { Status } from '@/types/common';
 
 interface Contact {
   id: string;
@@ -21,15 +22,17 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  status: 'idle' | 'pending' | 'failed';
+  status: Status;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   error?: string;
 }
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
-  status: 'idle',
+  status: Status.IDLE,
+  isAdmin: false,
 };
 
 export const signUp = createAsyncThunk(
@@ -137,19 +140,26 @@ export const getProfile = createAsyncThunk(
 
 export const updateProfile = createAsyncThunk(
   'user/updateProfile',
-  async (profileData: Partial<User>, { getState, rejectWithValue }) => {
+  async (
+    { profileData, userId }: { profileData: Partial<User>; userId?: string },
+    { getState, rejectWithValue },
+  ) => {
     const state = getState() as RootState;
+    const isOwnProfile = !userId;
     try {
-      console.log('');
       if (!state.auth.user) {
         return;
       }
-      const response = await axios.patch(`${API_USERS_URL}/${state.auth.user.id}`, profileData, {
-        withCredentials: true,
-      });
+      const response = await axios.patch(
+        `${API_USERS_URL}/${userId || state.auth.user.id}`,
+        profileData,
+        {
+          withCredentials: true,
+        },
+      );
       console.log('Update profile response', response.data);
 
-      return response.data;
+      return { data: response.data, isOwnProfile };
     } catch (error) {
       if (error instanceof AxiosError) {
         console.error(error.response);
@@ -161,19 +171,21 @@ export const updateProfile = createAsyncThunk(
 
 export const deleteUser = createAsyncThunk(
   'user/deleteUser',
-  async (_, { getState, rejectWithValue }) => {
+  async ({ userId }: { userId?: string }, { getState, rejectWithValue }) => {
     const state = getState() as RootState;
-
+    const isOwnProfile = !userId;
     try {
       if (!state.auth.user) {
         return rejectWithValue('User not found');
       }
+      console.log({ userId, authUserId: state.auth.user.id });
+      console.log(userId || state.auth.user.id);
 
-      await axios.delete(`${API_USERS_URL}/${state.auth.user.id}`, {
+      await axios.delete(`${API_USERS_URL}/${userId || state.auth.user.id}`, {
         withCredentials: true,
       });
 
-      return true;
+      return { isOwnProfile };
     } catch (error) {
       if (error instanceof AxiosError) {
         console.log(error.response);
@@ -281,42 +293,48 @@ const authSlice = createSlice({
     clearAuthState(state) {
       state.user = null;
       state.isAuthenticated = false;
-      state.status = 'idle';
+      state.status = Status.IDLE;
+      state.isAdmin = false;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(signUp.pending, (state) => {
-        state.status = 'pending';
+        state.status = Status.PENDING;
       })
       .addCase(signUp.fulfilled, (state, action: PayloadAction<any>) => {
-        state.status = 'idle';
+        state.status = Status.IDLE;
         state.user = action.payload;
         state.isAuthenticated = true;
         state.error = undefined;
+        state.isAdmin = action.payload?.role === 'admin' ? true : false;
       })
       .addCase(signUp.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = Status.FAILED;
         state.error = action.payload as string;
+        state.isAdmin = false;
       })
       .addCase(signIn.pending, (state) => {
-        state.status = 'pending';
+        state.status = Status.PENDING;
       })
       .addCase(signIn.fulfilled, (state, action: PayloadAction<any>) => {
-        state.status = 'idle';
+        state.status = Status.IDLE;
         state.user = action.payload;
         state.isAuthenticated = true;
         state.error = undefined;
+        state.isAdmin = action.payload?.role === 'admin' ? true : false;
       })
       .addCase(signIn.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = Status.FAILED;
         state.error = action.payload as string;
         state.isAuthenticated = false;
+        state.isAdmin = false;
       })
       .addCase(signOut.fulfilled, (state) => {
-        state.status = 'idle';
+        state.status = Status.IDLE;
         state.user = null;
         state.isAuthenticated = false;
+        state.isAdmin = false;
       })
       .addCase(getProfile.fulfilled, (state, action: PayloadAction<any>) => {
         console.log('Payload', action.payload);
@@ -325,6 +343,7 @@ const authSlice = createSlice({
           return;
         }
         state.user = action.payload?.data;
+        state.isAdmin = action.payload?.data?.role === 'admin' ? true : false;
 
         if (state.user) {
           state.user.avatarPath = action.payload?.data?.avatarPath ?? '';
@@ -344,10 +363,14 @@ const authSlice = createSlice({
         console.log('update profile fullfiled action.payload', action.payload);
 
         state.user = { ...state.user, ...action.payload };
+        state.isAdmin = action.payload?.role === 'admin' ? true : false;
       })
-      .addCase(deleteUser.fulfilled, (state) => {
-        state.user = null;
-        state.isAuthenticated = false;
+      .addCase(deleteUser.fulfilled, (state, action: PayloadAction<any>) => {
+        if (action.payload.isOwnProfile) {
+          state.user = null;
+          state.isAuthenticated = false;
+          state.isAdmin = false;
+        }
       })
       .addCase(deleteUser.rejected, (state, action) => {
         state.error = action.payload as string;

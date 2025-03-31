@@ -1,19 +1,11 @@
-import { SchemaObject } from 'ajv';
+import { JSONSchemaType } from 'ajv';
+import { CreateOrUpdateCommentSchema } from '../types/comment';
 
-export const createCommentSchema: SchemaObject = {
+export const createOrUpdateCommentSchema: JSONSchemaType<CreateOrUpdateCommentSchema> = {
   type: 'object',
   properties: {
     content: { type: 'string' },
   },
   required: ['content'],
-  additionalProperties: false,
-};
-
-export const updateCommentSchema: SchemaObject = {
-  type: 'object',
-  properties: {
-    content: { type: 'string' },
-  },
-  required: [],
   additionalProperties: false,
 };

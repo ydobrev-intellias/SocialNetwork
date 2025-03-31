@@ -2,10 +2,11 @@ import { Context } from 'koa';
 import { AppDataSource } from '../data-source';
 import { Comment } from '../entities/Comment';
 import { Post } from '../entities/Post';
+import axios from 'axios';
 
 export const createComment = async (ctx: Context) => {
   const { postId } = ctx.params;
-  const { content } = ctx.request.body;
+  const { content } = ctx.request.body as any;
   const { id: ownerId } = JSON.parse(ctx.headers['x-auth-user-data'] as string);
 
   const postRepository = AppDataSource.getRepository(Post);
@@ -15,9 +16,7 @@ export const createComment = async (ctx: Context) => {
   });
 
   if (!post) {
-    ctx.status = 404;
-    ctx.body = { message: 'Post not found' };
-    return;
+    ctx.throw(404, 'Post not found');
   }
 
   if (post.isRepost && post.originalPost) {
@@ -31,70 +30,78 @@ export const createComment = async (ctx: Context) => {
     ownerId,
   });
 
-  await commentRepository.save(comment);
-
-  ctx.status = 201;
-  ctx.body = comment;
+  return await commentRepository.save(comment);
 };
 
 export const getComments = async (ctx: Context) => {
   const { postId } = ctx.params;
 
   const postRepository = AppDataSource.getRepository(Post);
-  let post = await postRepository.findOne({
+  let post: any = await postRepository.findOne({
     where: { id: postId },
     relations: ['comments', 'originalPost'],
   });
+  console.log('Comments post', post);
 
   if (!post) {
-    ctx.status = 404;
-    ctx.body = { message: 'Post not found' };
-    return;
+    ctx.throw(404, 'Post not found');
   }
 
   if (post.isRepost && post.originalPost) {
     post = post.originalPost;
   }
+  const comments = post.comments;
 
-  ctx.status = 200;
-  ctx.body = post.comments;
+  if (comments?.length > 0) {
+    for (let comment of comments) {
+      const response = await axios.get(`http://user-service:4002/${comment.ownerId}`, {
+        withCredentials: true,
+      });
+      console.log('Comments service owner response', response);
+      comment.ownerProfile = response.data;
+    }
+  }
+
+  return comments;
 };
 
 export const deleteComment = async (ctx: Context) => {
   const { commentId } = ctx.params;
+  const { id: ownerId, role } = JSON.parse(ctx.headers['x-auth-user-data'] as string);
 
   const commentRepository = AppDataSource.getRepository(Comment);
   const comment = await commentRepository.findOne({ where: { id: commentId } });
 
   if (!comment) {
-    ctx.status = 404;
-    ctx.body = { message: 'Comment not found' };
-    return;
+    ctx.throw(404, 'Comment not found');
+  }
+
+  if (comment.ownerId !== ownerId && role !== 'admin') {
+    ctx.throw(403, 'Unauthorized to delete this post');
   }
 
   await commentRepository.delete({ id: commentId });
-
-  ctx.status = 204;
-  ctx.body = '';
 };
 
 export const updateComment = async (ctx: Context) => {
   const { commentId } = ctx.params;
-  const { content } = ctx.request.body;
+  const { content } = ctx.request.body as any;
+  const { id: ownerId, role } = JSON.parse(ctx.headers['x-auth-user-data'] as string);
 
   const commentRepository = AppDataSource.getRepository(Comment);
   const comment = await commentRepository.findOne({ where: { id: commentId } });
 
   if (!comment) {
-    ctx.status = 404;
-    ctx.body = { message: 'Comment not found' };
-    return;
+    ctx.throw(404, 'Comment not found');
+  }
+
+  if (comment.ownerId !== ownerId && role !== 'admin') {
+    ctx.throw(403, 'Unauthorized to delete this post');
   }
 
   comment.content = content;
 
   await commentRepository.save(comment);
 
-  ctx.status = 201;
-  ctx.body = comment;
+  return comment;
 };

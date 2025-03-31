@@ -1,23 +1,15 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Like } from './Like';
 import { Comment } from './Comment';
-
-export enum PostPrivacy {
-  PUBLIC = 'public',
-  PRIVATE = 'private',
-}
+import { PostPrivacy } from '../types/common';
 
 @Entity('posts')
-//Post
 export class Post {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column('text', { nullable: true })
   content: string;
-
-  @Column('text', { nullable: true })
-  title: string;
 
   @Column('uuid')
   ownerId: string;

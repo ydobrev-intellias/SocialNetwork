@@ -7,17 +7,26 @@ import {
 } from '../services/comment.service';
 
 export const createCommentController = async (ctx: Context) => {
-  await createComment(ctx);
+  const comment = await createComment(ctx);
+  ctx.status = 201;
+  ctx.body = comment;
 };
 
 export const deleteCommentController = async (ctx: Context) => {
   await deleteComment(ctx);
+  ctx.status = 200;
+  ctx.body = {};
 };
 
 export const updateCommentController = async (ctx: Context) => {
-  await updateComment(ctx);
+  const comment = await updateComment(ctx);
+  ctx.status = 200;
+  ctx.body = comment;
 };
 
 export const getCommentsController = async (ctx: Context) => {
-  await getComments(ctx);
+  const comments = await getComments(ctx);
+  ctx.status = 200;
+  console.log('Get comments controller comments', comments);
+  ctx.body = comments;
 };
