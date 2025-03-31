@@ -1,6 +1,7 @@
 import Header from './layout/Header';
 import ActivityWall from './views/ActivityWall/ActivityWall';
 import GuestRoute from './views/GuestRoute/GuestRoute';
+import PostPage from './views/PostPage/PostPage';
 
 import ProfilePage from './views/ProfilePage/ProfilePage';
 
@@ -33,6 +34,7 @@ function App() {
           />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/:userId" element={<ProfilePage />} />
+          <Route path="/posts/:postId" element={<PostPage />} />
         </Routes>
       </div>
     </BrowserRouter>
