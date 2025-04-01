@@ -10,6 +10,9 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Input } from '@/components/ui/input';
 import UserProfileLink from '@/components/user/UserProfileLink';
+import { Post } from '@/types/post';
+import { User } from '@/types/user';
+import { format } from 'date-fns';
 
 export default function Header() {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -37,7 +40,6 @@ export default function Header() {
     setIsLoading(true);
     try {
       const response = await axios.get(`${API_SEARCH_URL}?query=${value}`);
-      console.log(response.data);
       setResults(response.data);
     } catch (error) {
       console.error('Error fetching search results:', error);
@@ -47,9 +49,9 @@ export default function Header() {
   };
 
   useEffect(() => {
-    console.log('Header', user);
+    setQuery('');
     dispatch(getProfile({}));
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch, isAuthenticated, navigate]);
 
   return (
     <header className="w-full bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
@@ -79,7 +81,7 @@ export default function Header() {
                 <div className="p-2">
                   <h3 className="font-semibold text-gray-700">Users</h3>
                   <ul>
-                    {results.users.map((user: any) => (
+                    {results.users.map((user: User) => (
                       <li
                         key={user?.id}
                         className="py-1 px-2 text-gray-600 cursor-pointer hover:bg-gray-100"
@@ -94,12 +96,29 @@ export default function Header() {
                 <div className="p-2">
                   <h3 className="font-semibold text-gray-700">Posts</h3>
                   <ul>
-                    {results.posts.map((post: any) => (
+                    {results.posts.map((post: Post) => (
                       <li
                         key={post?.id}
-                        className="py-1 px-2 text-gray-600 cursor-pointer hover:bg-gray-100"
+                        className="py-1 px-2 text-gray-600 cursor-pointer hover:bg-gray-100 border-b border-gray-200 last:border-0"
                       >
-                        {post?.content}
+                        <Link to={`/posts/${post.id}`}>
+                          <div className="flex flex-col">
+                            <div className="flex items-center space-x-2">
+                              <UserProfileLink activity={post} inSearch={true} />
+                              <span className="text-xs text-gray-400">
+                                {post.updatedAt
+                                  ? `Last updated: ${format(new Date(post.updatedAt), 'dd MMM yyyy, HH:mm')}`
+                                  : `Posted on: ${format(new Date(post.createdAt), 'dd MMM yyyy, HH:mm')}`}
+                              </span>
+                            </div>
+
+                            <span className="text-sm text-gray-600">
+                              {post.content.length > 100
+                                ? `${post.content.slice(0, 100)}...`
+                                : post.content}
+                            </span>
+                          </div>
+                        </Link>
                       </li>
                     ))}
                   </ul>
