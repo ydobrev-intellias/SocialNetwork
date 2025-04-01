@@ -5,7 +5,7 @@ import Form from '../../shared/Form/Form';
 import { AppDispatch, RootState } from '../../redux/store';
 import { resetError, signUp } from '../../redux/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
-import useFormState from '../../hooks/useFormState';
+import useAuthFormState from '../../hooks/useAuthFormState';
 
 const initialFormState = {
   username: {
@@ -35,7 +35,7 @@ function SignUpForm() {
   const navigate = useNavigate();
   const { status, error } = useSelector((state: RootState) => state.auth);
 
-  const { formState, dispatch: formDispatch } = useFormState(initialFormState);
+  const { formState, dispatch: formDispatch } = useAuthFormState(initialFormState);
 
   useEffect(() => {
     dispatch(resetError());

@@ -29,7 +29,7 @@ export const signUp = async (ctx: Context) => {
 
   const { password, ...newAuthUserWithoutPassword } = newAuthUser;
 
-  await axios.post('http://user-service:4002/', newAuthUser, { withCredentials: true });
+  await axios.post(`${config?.userServiceUrl}/`, newAuthUser, { withCredentials: true });
 
   const token = jwt.sign(
     {
@@ -37,12 +37,12 @@ export const signUp = async (ctx: Context) => {
     },
     config.jwtSecret,
     {
-      expiresIn: '1h',
+      expiresIn: config.jwtExpiration,
     },
   );
 
   ctx.cookies.set('jwt', token, {
-    maxAge: 3600000,
+    maxAge: config.cookieMaxAge,
     httpOnly: true,
   });
 
@@ -72,12 +72,12 @@ export const signIn = async (ctx: Context) => {
     },
     config.jwtSecret,
     {
-      expiresIn: '1h',
+      expiresIn: config.jwtExpiration,
     },
   );
 
   ctx.cookies.set('jwt', token, {
-    maxAge: 3600000,
+    maxAge: config.cookieMaxAge,
     httpOnly: true,
   });
 

@@ -7,6 +7,8 @@ import axios from 'axios';
 import { Like } from '../entities/Like';
 import { Comment } from '../entities/Comment';
 import { PostPrivacy } from '../types/common';
+import { config } from '../../config';
+import { RepostWithOwnerProfile } from '../types/post';
 
 export const createPost = async (ctx: Context) => {
   const body = ctx.request.body as Post;
@@ -52,14 +54,14 @@ export const getPost = async (ctx: Context) => {
     }
   }
 
-  const response = await axios.get(`http://user-service:4002/${post.ownerId}`, {
+  const response = await axios.get(`${config.userServiceUrl}/${post.ownerId}`, {
     withCredentials: true,
   });
 
   const ownerProfile = response.data;
   if (post.isRepost) {
     const repostOwnerProfileResponse = await axios.get(
-      `http://user-service:4002/${post.originalPost.ownerId}`,
+      `${config.userServiceUrl}/${post.originalPost.ownerId}`,
       {
         withCredentials: true,
       },
@@ -139,10 +141,7 @@ export const getActivityWall = async (ctx: Context) => {
   const postRepository = AppDataSource.getRepository(Post);
 
   const userHeaders = ctx.headers['x-auth-user-data'];
-  // if (userHeaders || !userHeaders) {
-  //   console.log('Unauthorized');
-  //   ctx.throw(401, 'Unauthorized');
-  // }
+
   let posts: any;
   if (!userHeaders) {
     posts = await postRepository.find({
@@ -152,13 +151,13 @@ export const getActivityWall = async (ctx: Context) => {
 
     console.log('COOL WER ARE HERE 1');
     for (let post of posts) {
-      const ownerProfileResponse = await axios.get(`http://user-service:4002/${post.ownerId}`, {
+      const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${post.ownerId}`, {
         withCredentials: true,
       });
       post.ownerProfile = ownerProfileResponse.data;
       if (post.isRepost) {
         const repostOwnerProfileResponse = await axios.get(
-          `http://user-service:4002/${post.originalPost.ownerId}`,
+          `${config.userServiceUrl}/${post.originalPost.ownerId}`,
           {
             withCredentials: true,
           },
@@ -189,13 +188,13 @@ export const getActivityWall = async (ctx: Context) => {
   }
 
   for (let post of posts) {
-    const ownerProfileResponse = await axios.get(`http://user-service:4002/${post.ownerId}`, {
+    const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${post.ownerId}`, {
       withCredentials: true,
     });
     post.ownerProfile = ownerProfileResponse.data;
     if (post.isRepost) {
       const repostOwnerProfileResponse = await axios.get(
-        `http://user-service:4002/${post.originalPost?.ownerId}`,
+        `${config.userServiceUrl}/${post.originalPost?.ownerId}`,
         {
           withCredentials: true,
         },
@@ -230,9 +229,7 @@ export const createRepost = async (ctx: Context) => {
   if (originalPost.privacy === PostPrivacy.PRIVATE && originalPost.ownerId !== ownerId) {
     ctx.throw(403, 'Cannot repost a private post');
   }
-  let repost: any;
-
-  console.log('Original post on backend', originalPost, 'repost owner id', ownerId);
+  let repost: Partial<RepostWithOwnerProfile>;
 
   repost = postRepository.create({
     ownerId,
@@ -241,12 +238,15 @@ export const createRepost = async (ctx: Context) => {
     privacy,
     isRepost: true,
   });
-  const ownerProfileResponse = await axios.get(`http://user-service:4002/${repost.ownerId}`, {
+  if (!repost || !repost.originalPost) {
+    return;
+  }
+  const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${repost.ownerId}`, {
     withCredentials: true,
   });
   repost.ownerProfile = ownerProfileResponse.data;
   const repostOwnerProfileResponse = await axios.get(
-    `http://user-service:4002/${repost.originalPost?.ownerId}`,
+    `${config.userServiceUrl}/${repost.originalPost?.ownerId}`,
     {
       withCredentials: true,
     },

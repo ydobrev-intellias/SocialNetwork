@@ -14,16 +14,18 @@ import CreatePostModal from '../CreatePostModal/CreatePostModal';
 import CreateRepostModal from '../CreateRepostModal/CreateRepostModal';
 import PostCard from '../PostCard/PostCard';
 import CommentList from '../CommentList/CommentList';
+import { Comment } from '@/types/comment';
+import { Post } from '@/types/post';
 
 export default function PostPage() {
   const { postId } = useParams();
   const navigate = useNavigate();
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState('');
-  const [post, setPost] = useState<any>(null);
+  const [post, setPost] = useState<Post>();
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const [editingComment, setEditingComment] = useState<any>(null);
+  const [editingComment, setEditingComment] = useState<Partial<Comment>>();
   const [editContent, setEditContent] = useState('');
   const [mode, setMode] = useState<Mode>(Mode.CREATE);
   const [postToEdit, setPostToEdit] = useState<any | null>(null);
@@ -90,8 +92,11 @@ export default function PostPage() {
     if (!editContent.trim() || !editingComment) return;
 
     try {
+      if (!editingComment.id) {
+        return;
+      }
       await dispatch(updateComment({ commentId: editingComment.id, content: editContent }));
-      setEditingComment(null);
+      setEditingComment(undefined);
       setEditContent('');
       refreshData();
     } catch (error) {
@@ -165,7 +170,7 @@ export default function PostPage() {
               className="mb-4"
             />
             <div className="flex justify-end space-x-4">
-              <Button variant="secondary" onClick={() => setEditingComment(null)}>
+              <Button variant="secondary" onClick={() => setEditingComment(undefined)}>
                 Cancel
               </Button>
               <Button onClick={updateCommentHandler}>Save</Button>

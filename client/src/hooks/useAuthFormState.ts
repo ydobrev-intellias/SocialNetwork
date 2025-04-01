@@ -1,7 +1,7 @@
 import { useReducer } from 'react';
 import validate from '../utils/validate';
 
-function useFormState<
+function useAuthFormState<
   T extends {
     password?: { error: string; value: string };
     confirmPassword?: {
@@ -88,4 +88,4 @@ function useFormState<
   return { formState, dispatch };
 }
 
-export default useFormState;
+export default useAuthFormState;

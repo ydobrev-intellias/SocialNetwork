@@ -1,11 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Contact } from './Contact';
 import { Follower } from './Follower';
-
-export enum Role {
-  USER = 'user',
-  ADMIN = 'admin',
-}
+import { Role } from '../types/user';
 
 @Entity('users')
 export class User {

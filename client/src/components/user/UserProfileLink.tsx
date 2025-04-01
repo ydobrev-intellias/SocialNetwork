@@ -4,22 +4,38 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
 import { Comment } from '@/types/comment';
 import { Post } from '@/types/post';
+import { User } from '@/types/user';
 
-const UserProfileLink = ({ activity }: { activity: Comment | Post; isPost?: boolean }) => {
-  return (
-    <Link className="block" to={`/profile/${activity?.ownerProfile?.id}`}>
+const UserProfileLink = ({
+  activity,
+  user,
+  inSearch,
+}: {
+  activity?: Comment | Post;
+  user?: User;
+  inSearch?: boolean;
+}) => {
+  const profileId = activity ? activity?.ownerProfile?.id : user?.id;
+  const username = activity ? activity?.ownerProfile?.username : user?.username;
+  const avatarPath = activity ? activity?.ownerProfile?.avatarPath : user?.avatarPath;
+
+  const avatarSrc = avatarPath ? `${API_USERS_URL}${avatarPath}` : undefined;
+
+  const content = (
+    <div className="flex gap-4 items-center">
       <Avatar>
-        <AvatarImage
-          src={
-            activity?.ownerProfile?.avatarPath
-              ? `${API_USERS_URL}${activity?.ownerProfile?.avatarPath}`
-              : undefined
-          }
-        />
-        <AvatarFallback>{activity?.ownerProfile?.username[0]?.toLocaleUpperCase()}</AvatarFallback>
+        <AvatarImage src={avatarSrc} />
+        <AvatarFallback>{username?.[0]?.toLocaleUpperCase()}</AvatarFallback>
       </Avatar>
-    </Link>
+      {user && <span>{username}</span>}
+    </div>
   );
+
+  if (inSearch) {
+    return content;
+  }
+
+  return <Link to={`/profile/${profileId}`}>{content}</Link>;
 };
 
 export default UserProfileLink;

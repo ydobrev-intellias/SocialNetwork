@@ -3,6 +3,8 @@ import { AppDataSource } from '../data-source';
 import { Comment } from '../entities/Comment';
 import { Post } from '../entities/Post';
 import axios from 'axios';
+import { config } from '../../config';
+import { CommentsWithOwnerProfile } from '../types/comment';
 
 export const createComment = async (ctx: Context) => {
   const { postId } = ctx.params;
@@ -37,7 +39,7 @@ export const getComments = async (ctx: Context) => {
   const { postId } = ctx.params;
 
   const postRepository = AppDataSource.getRepository(Post);
-  let post: any = await postRepository.findOne({
+  let post: Post | null = await postRepository.findOne({
     where: { id: postId },
     relations: ['comments', 'originalPost'],
   });
@@ -50,11 +52,11 @@ export const getComments = async (ctx: Context) => {
   if (post.isRepost && post.originalPost) {
     post = post.originalPost;
   }
-  const comments = post.comments;
+  const comments: CommentsWithOwnerProfile[] = post.comments;
 
   if (comments?.length > 0) {
     for (let comment of comments) {
-      const response = await axios.get(`http://user-service:4002/${comment.ownerId}`, {
+      const response = await axios.get(`${config.userServiceUrl}/${comment.ownerId}`, {
         withCredentials: true,
       });
       console.log('Comments service owner response', response);

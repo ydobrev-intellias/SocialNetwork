@@ -1,10 +1,12 @@
 import { Context } from 'koa';
 import { AppDataSource } from '../data-source';
-import { Role, User } from '../entities/User';
+import { User } from '../entities/User';
 import { FileSuffix } from '../utils/generateFilename';
 import { uploadFile } from '../utils/uploadFile';
 import fs from 'fs/promises';
 import axios from 'axios';
+import { config } from '../../config';
+import { Role } from '../types/user';
 
 export const getProfile = async (ctx: Context) => {
   const { userId } = ctx.params;
@@ -104,7 +106,7 @@ export const deleteUser = async (ctx: Context) => {
   if (tokenUserId !== userId && role !== Role.ADMIN) {
     ctx.throw(403, 'Forbidden from deleting user');
   }
-  await axios.delete(`http://auth-service:4001/users/${userId}`, {
+  await axios.delete(`${config.authServiceUrl}/users/${userId}`, {
     headers: {
       Cookie: ctx.headers.cookie,
       'X-Auth-User-Data': userHeaders,
@@ -113,7 +115,7 @@ export const deleteUser = async (ctx: Context) => {
     withCredentials: true,
   });
 
-  await axios.delete(`http://post-service:4003/activity/${userId}`, {
+  await axios.delete(`${config.postServiceUrl}/activity/${userId}`, {
     headers: {
       Cookie: ctx.headers.cookie,
       'X-Auth-User-Data': userHeaders,
@@ -143,7 +145,7 @@ export const updateUser = async (ctx: Context) => {
   }
   Object.assign(user, body);
 
-  await axios.patch(`http://auth-service:4001/users/${userId}`, body, {
+  await axios.patch(`${config.authServiceUrl}/users/${userId}`, body, {
     headers: { Cookie: ctx.headers.cookie, 'X-Auth-User-Data': userHeaders },
     withCredentials: true,
   });

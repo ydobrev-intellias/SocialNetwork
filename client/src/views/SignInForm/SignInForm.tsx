@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import InputField from '../../shared/InputField/InputField';
 import Form from '../../shared/Form/Form';
-import useFormState from '../../hooks/useFormState';
+import useAuthFormState from '../../hooks/useAuthFormState';
 import { AppDispatch, RootState } from '../../redux/store';
 import { resetError, signIn } from '../../redux/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +22,7 @@ function SignInForm() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { status, error } = useSelector((state: RootState) => state.auth);
-  const { formState, dispatch: formDispatch } = useFormState(initialFormState);
+  const { formState, dispatch: formDispatch } = useAuthFormState(initialFormState);
 
   useEffect(() => {
     dispatch(resetError());

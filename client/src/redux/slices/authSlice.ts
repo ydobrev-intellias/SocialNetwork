@@ -3,22 +3,7 @@ import { createAsyncThunk, createSlice, current, PayloadAction } from '@reduxjs/
 import { API_AUTH_URL, API_USERS_URL } from '../../config';
 import { RootState } from '../store';
 import { Status } from '@/types/common';
-
-interface Contact {
-  id: string;
-  type: string;
-  value: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  role: string;
-  username: string;
-  avatarPath: string | null;
-  coverPath: string | null;
-  contacts: Contact[];
-}
+import { Contact, Role, User } from '@/types/user';
 
 interface AuthState {
   user: User | null;
@@ -307,7 +292,7 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.isAuthenticated = true;
         state.error = undefined;
-        state.isAdmin = action.payload?.role === 'admin' ? true : false;
+        state.isAdmin = action.payload?.role === Role.ADMIN ? true : false;
       })
       .addCase(signUp.rejected, (state, action) => {
         state.status = Status.FAILED;
@@ -322,7 +307,7 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.isAuthenticated = true;
         state.error = undefined;
-        state.isAdmin = action.payload?.role === 'admin' ? true : false;
+        state.isAdmin = action.payload?.role === Role.ADMIN ? true : false;
       })
       .addCase(signIn.rejected, (state, action) => {
         state.status = Status.FAILED;
@@ -343,7 +328,7 @@ const authSlice = createSlice({
           return;
         }
         state.user = action.payload?.data;
-        state.isAdmin = action.payload?.data?.role === 'admin' ? true : false;
+        state.isAdmin = action.payload?.data?.role === Role.ADMIN ? true : false;
 
         if (state.user) {
           state.user.avatarPath = action.payload?.data?.avatarPath ?? '';
@@ -363,7 +348,7 @@ const authSlice = createSlice({
         console.log('update profile fullfiled action.payload', action.payload);
 
         state.user = { ...state.user, ...action.payload };
-        state.isAdmin = action.payload?.role === 'admin' ? true : false;
+        state.isAdmin = action.payload?.role === Role.ADMIN ? true : false;
       })
       .addCase(deleteUser.fulfilled, (state, action: PayloadAction<any>) => {
         if (action.payload.isOwnProfile) {
