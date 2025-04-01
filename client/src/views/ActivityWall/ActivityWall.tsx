@@ -10,6 +10,7 @@ import CreatePostModal from '../CreatePostModal/CreatePostModal';
 import PostsSection from '../PostsSection/PostsSection';
 import { Mode } from '@/types/common';
 import CreateRepostModal from '../CreateRepostModal/CreateRepostModal';
+import { PostData } from '@/types/post';
 
 export default function ActivityWall() {
   const dispatch = useDispatch<AppDispatch>();
@@ -17,7 +18,7 @@ export default function ActivityWall() {
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [mode, setMode] = useState<Mode>(Mode.CREATE);
-  const [postToEdit, setPostToEdit] = useState<any | null>(null);
+  const [postToEdit, setPostToEdit] = useState<PostData>();
   const [isRepost, setIsRepost] = useState(false);
   const [originalPostId, setOriginalPostId] = useState<string>('');
 
@@ -53,7 +54,7 @@ export default function ActivityWall() {
             await dispatch(getPosts());
             setModalOpen(false);
             setMode(Mode.CREATE);
-            setPostToEdit('');
+            setPostToEdit(undefined);
           }}
           onCreateOrUpdateRepost={() => {
             if (mode === Mode.CREATE) {
@@ -62,7 +63,7 @@ export default function ActivityWall() {
               dispatch(getPosts());
             }
             setModalOpen(false);
-            setPostToEdit('');
+            setPostToEdit(undefined);
           }}
           originalPostId={originalPostId}
           mode={mode}
@@ -75,7 +76,7 @@ export default function ActivityWall() {
             dispatch(getPosts());
             setModalOpen(false);
             setMode(Mode.CREATE);
-            setPostToEdit('');
+            setPostToEdit(undefined);
           }}
           onCreateOrUpdatePost={() => {
             console.log('POST ACTION');
@@ -85,7 +86,7 @@ export default function ActivityWall() {
               dispatch(getPosts());
             }
             setModalOpen(false);
-            setPostToEdit('');
+            setPostToEdit(undefined);
           }}
           mode={mode}
           postData={postToEdit}

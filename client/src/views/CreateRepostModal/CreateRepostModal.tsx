@@ -14,7 +14,7 @@ interface CreatePostModalProps {
   onCreateOrUpdateRepost: (post: Partial<Post>) => void;
   originalPostId: string;
   mode: Mode;
-  postData?: Omit<PostData, 'image'>;
+  postData?: PostData;
   isRepost?: boolean;
 }
 

@@ -18,7 +18,7 @@ interface PostCardProps {
   post: Post;
   setMode: Dispatch<SetStateAction<Mode>>;
   setModalOpen: Dispatch<SetStateAction<boolean>>;
-  setPostToEdit: any;
+  setPostToEdit: Dispatch<SetStateAction<Partial<Post>>>;
   setCommentsOpen: Dispatch<SetStateAction<boolean>>;
   isCommentsOpen: boolean;
   setIsRepost: Dispatch<SetStateAction<boolean>>;
@@ -68,9 +68,10 @@ export default function PostCard({
       onClick={() => {
         if (isWall) navigate(`/posts/${post.id}`);
       }}
+      className={isWall ? 'cursor-pointer' : ''}
     >
       <CardHeader className="flex flex-row items-center space-x-3">
-        <UserProfileLink activity={post} isPost={true} />
+        <UserProfileLink activity={post} />
         <div>
           <CardTitle className="text-sm font-semibold">{post?.ownerProfile?.username}</CardTitle>
           <p className="text-xs text-gray-500">
@@ -85,7 +86,7 @@ export default function PostCard({
         <p className="text-gray-700">{post.content}</p>
         {originalPost && (
           <div
-            className="mt-4 p-3 border-gray-400 bg-gray-100 rounded-md"
+            className={`mt-4 p-3 border-gray-400 bg-gray-100 rounded-md ${originalPost ? 'cursor-pointer' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/posts/${originalPost.id}`);
@@ -95,7 +96,7 @@ export default function PostCard({
               <PostModal postId={originalPost?.id} onClose={() => setCommentsOpen(false)} />
             )}
             <CardHeader className="flex flex-row items-center space-x-3">
-              <UserProfileLink activity={post} isPost={true} />
+              <UserProfileLink activity={originalPost} />
               <div>
                 <CardTitle className="text-sm font-semibold">
                   {originalPost?.ownerProfile?.username}

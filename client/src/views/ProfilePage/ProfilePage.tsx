@@ -31,10 +31,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Contact, User } from '@/types/user';
 
 export default function ProfilePage() {
   const { user: authUser } = useSelector((state: RootState) => state.auth);
-  const [user, setUser] = useState<any>();
+  const [user, setUser] = useState<User>();
 
   const { userId } = useParams<{ userId?: string }>();
   console.info(user, userId);
@@ -99,14 +100,14 @@ export default function ProfilePage() {
     }
   };
 
-  const updateContactHandler = async (e: any) => {
+  const updateContactHandler = async () => {
     await dispatch(updateContact(newContact));
     setNewContact({ type: '', value: '' });
   };
 
   const deleteContactHandler = async (contactId: string) => {
     await dispatch(deleteContact(contactId));
-    const updatedContacts = contacts.filter((contact: any) => contact.id !== contactId);
+    const updatedContacts = contacts.filter((contact: Contact) => contact.id !== contactId);
     setContacts(updatedContacts);
   };
 
@@ -159,7 +160,7 @@ export default function ProfilePage() {
         <h2 className="text-xl font-semibold">{user?.username}</h2>
         <p className="text-gray-500">{user?.email}</p>
         <div className="mt-4">
-          {contacts?.map((contact: any, index: number) => (
+          {contacts?.map((contact: Contact, index: number) => (
             <div key={index} className="flex justify-between items-center mb-2">
               <p className="text-gray-500">
                 <strong>{contact.type}:</strong> {contact.value}

@@ -18,6 +18,8 @@ import {
 import UserProfileLink from '@/components/user/UserProfileLink';
 import { format } from 'date-fns';
 import CommentList from '../CommentList/CommentList';
+import { Comment } from '@/types/comment';
+import { Post } from '@/types/post';
 
 interface PostModalProps {
   postId: string;
@@ -25,12 +27,12 @@ interface PostModalProps {
 }
 
 export default function PostModal({ postId, onClose }: PostModalProps) {
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState('');
-  const [originalPost, setOriginalPost] = useState<any>(null);
+  const [originalPost, setOriginalPost] = useState<Post>();
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const [editingComment, setEditingComment] = useState<any>(null);
+  const [editingComment, setEditingComment] = useState<Partial<Comment>>();
   const [editContent, setEditContent] = useState('');
   const getComments = async () => {
     try {
@@ -69,10 +71,12 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
 
   const updateCommentHandler = async () => {
     if (!editContent.trim()) return;
-    await dispatch(updateComment({ commentId: editingComment.id, content: editContent }));
-    setEditingComment(null);
-    setEditContent('');
-    getComments();
+    if (editingComment?.id) {
+      await dispatch(updateComment({ commentId: editingComment?.id, content: editContent }));
+      setEditingComment(undefined);
+      setEditContent('');
+      getComments();
+    }
   };
 
   return (
@@ -93,7 +97,7 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
         {originalPost && (
           <div className="mt-4 p-3 border border-gray-300 bg-gray-100 rounded-md">
             <CardHeader className="flex flex-row items-center space-x-3">
-              <UserProfileLink activity={originalPost} isPost={true} />
+              <UserProfileLink activity={originalPost} />
               <div>
                 <CardTitle className="text-sm font-semibold">
                   {originalPost?.ownerProfile?.username}
@@ -148,15 +152,14 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
             </Button>
           </div>
         )}
-        <Dialog open={!!editingComment} onOpenChange={() => setEditingComment(null)}>
-          {editingComment && console.log('Editing Comment Modal Open')}
+        <Dialog open={!!editingComment} onOpenChange={() => setEditingComment(undefined)}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Comment</DialogTitle>
             </DialogHeader>
             <Input value={editContent} onChange={(e) => setEditContent(e.target.value)} />
             <DialogFooter>
-              <Button variant="secondary" onClick={() => setEditingComment(null)}>
+              <Button variant="secondary" onClick={() => setEditingComment(undefined)}>
                 Cancel
               </Button>
               <Button onClick={updateCommentHandler}>Save</Button>

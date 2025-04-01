@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 interface CommentListProps {
   comments: Comment[];
   getComments: Function;
-  setEditingComment: Dispatch<SetStateAction<Comment>>;
+  setEditingComment: Dispatch<SetStateAction<Partial<Comment> | undefined>>;
   setEditContent: Dispatch<SetStateAction<string>>;
   refreshData?: () => void;
 }

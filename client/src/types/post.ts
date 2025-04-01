@@ -1,11 +1,14 @@
+import { Comment } from './comment';
+import { Like } from './like';
+
 export interface Post {
   id: string;
   content: string;
   ownerId: string;
   mediaPath?: string | null;
   privacy: PostPrivacy;
-  likes?: any[] | null;
-  comments?: any[] | null;
+  likes?: Like[] | null;
+  comments?: Comment[] | null;
   originalPost?: Post & {
     ownerProfile?: {
       username: string;
