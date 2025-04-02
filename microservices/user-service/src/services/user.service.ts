@@ -14,15 +14,16 @@ export const getProfile = async (ctx: Context) => {
 
   const user = await userRepository.findOne({
     where: { id: userId },
-    relations: { contacts: true },
+    relations: {
+      contacts: true,
+      followers: { follower: true },
+      following: { following: true },
+    },
   });
-  console.log(`GET PROFILE SERVICE userid ${userId} user ${user}`);
 
   if (!user) {
     ctx.throw(403, `User with id ${userId} does not exist`);
   }
-
-  console.log('user profile with contacts', user);
 
   return user;
 };
