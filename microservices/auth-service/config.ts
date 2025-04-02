@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-const maxAgeMs = 3600000;
+const maxAgeMs = 86400000;
 
 export const config = {
   port: process.env.PORT || 4001,
