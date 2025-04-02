@@ -24,7 +24,7 @@ const UserProfileLink = ({
   const content = (
     <div className="flex gap-4 items-center">
       <Avatar>
-        <AvatarImage src={avatarSrc} />
+        <AvatarImage className="object-cover" src={avatarSrc} />
         <AvatarFallback>{username?.[0]?.toLocaleUpperCase()}</AvatarFallback>
       </Avatar>
       {user && <span>{username}</span>}
