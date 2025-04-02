@@ -1,7 +1,8 @@
 import { Context } from 'koa';
 import { AppDataSource } from '../data-source';
 import { Contact } from '../entities/Contact';
-import { Role, User } from '../entities/User';
+import { User } from '../entities/User';
+import { Role } from '../types/user';
 
 export const getContact = async (ctx: Context) => {
   const { userId } = ctx.params;
@@ -40,16 +41,23 @@ export const deleteContact = async (ctx: Context) => {
 export const updateContact = async (ctx: Context) => {
   const { contactId } = ctx.params;
   const contactRepository = AppDataSource.getRepository(Contact);
+  console.log('updateContact contactId', contactId);
   const contact = await contactRepository.findOne({
     where: { id: contactId },
     relations: { user: true },
   });
+  const userDataHeader = ctx.headers['x-auth-user-data'];
+  if (!userDataHeader) {
+    ctx.throw(400, 'Missing authentication data');
+  }
+
+  const userData = JSON.parse(userDataHeader as string);
 
   if (!contact) {
     ctx.throw(404, `Contact with id ${contactId} does not exist`);
   }
 
-  if (contact.user.id !== ctx.state.user.id && ctx.state.user.role !== Role.ADMIN) {
+  if (contact.user.id !== userData.id && userData.role !== Role.ADMIN) {
     ctx.throw(403, 'You do not have permission to take this action');
   }
 
