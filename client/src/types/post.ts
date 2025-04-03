@@ -40,6 +40,7 @@ export type UpdatePost = Partial<CreatePost>;
 export enum PostPrivacy {
   PUBLIC = 'public',
   PRIVATE = 'private',
+  FOLLOWERS = 'followers',
 }
 
 export interface PostData {

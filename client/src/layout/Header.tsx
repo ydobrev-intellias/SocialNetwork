@@ -39,7 +39,9 @@ export default function Header() {
 
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_SEARCH_URL}?query=${value}`);
+      const response = await axios.get(`${API_SEARCH_URL}?query=${value}`, {
+        withCredentials: true,
+      });
       setResults(response.data);
     } catch (error) {
       console.error('Error fetching search results:', error);
