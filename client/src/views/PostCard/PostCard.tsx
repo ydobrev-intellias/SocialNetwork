@@ -79,6 +79,9 @@ export default function PostCard({
               ? `Last updated: ${format(new Date(post.updatedAt), 'dd MMM yyyy, HH:mm')}`
               : `${post.isRepost ? 'Reposted on' : 'Posted on'} ${format(new Date(post.createdAt), 'dd MMM yyyy, HH:mm')}`}
           </p>
+          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+            {post?.privacy}
+          </span>
         </div>
       </CardHeader>
 
