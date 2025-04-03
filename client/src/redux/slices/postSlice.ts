@@ -140,9 +140,13 @@ export const toggleLike = createAsyncThunk(
         console.log('Delete result', res);
         return { postId, likeId, isLiked: false };
       } else {
-        const res = await axios.post(`${API_POSTS_URL}/${postId}/likes`, null, {
-          withCredentials: true,
-        });
+        const res = await axios.post(
+          `${API_POSTS_URL}/${postId}/likes`,
+          {},
+          {
+            withCredentials: true,
+          },
+        );
         console.log(res);
         return { postId, like: res.data, isLiked: true };
       }

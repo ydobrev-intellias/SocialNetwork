@@ -68,7 +68,7 @@ export default function PostCard({
       onClick={() => {
         if (isWall) navigate(`/posts/${post.id}`);
       }}
-      className={isWall ? 'cursor-pointer' : ''}
+      className={`mt-4 p-4 bg-white border border-gray-300 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 ${isWall ? 'cursor-pointer' : ''}`}
     >
       <CardHeader className="flex flex-row items-center space-x-3">
         <UserProfileLink activity={post} />
@@ -86,7 +86,7 @@ export default function PostCard({
         <p className="text-gray-700">{post.content}</p>
         {originalPost && (
           <div
-            className={`mt-4 p-3 border-gray-400 bg-gray-100 rounded-md ${originalPost ? 'cursor-pointer' : ''}`}
+            className={`mt-4 p-4 bg-cyan-950100 border border-gray-300 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300  ${originalPost ? 'cursor-pointer' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/posts/${originalPost.id}`);
@@ -111,10 +111,13 @@ export default function PostCard({
             <CardContent>
               <p className="text-gray-700 italic">{originalPost.content}</p>
               {originalPost.mediaPath && (
-                <div className="mt-3">
+                <div className="mt-3 relative">
                   {originalPost.mediaPath.endsWith('.mp4') ||
                   originalPost.mediaPath.endsWith('.webm') ? (
-                    <video controls className="w-full max-h-80 object-contain rounded-lg">
+                    <video
+                      controls
+                      className="w-full max-h-[400px] object-cover rounded-lg shadow-lg"
+                    >
                       <source src={`${API_POSTS_URL}${originalPost.mediaPath}`} type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
@@ -122,7 +125,7 @@ export default function PostCard({
                     <img
                       src={`${API_POSTS_URL}${originalPost.mediaPath}`}
                       alt="Post media"
-                      className="w-full max-h-80 object-contain rounded-lg"
+                      className="w-full max-h-[400px] object-cover rounded-lg shadow-lg"
                     />
                   )}
                 </div>
@@ -132,9 +135,9 @@ export default function PostCard({
         )}
 
         {post.mediaPath && (
-          <div className="mt-3">
+          <div className="mt-3 relative">
             {post.mediaPath.endsWith('.mp4') || post.mediaPath.endsWith('.webm') ? (
-              <video controls className="w-full max-h-80 object-contain rounded-lg">
+              <video controls className="w-full max-h-[400px] object-cover rounded-lg shadow-lg">
                 <source src={`${API_POSTS_URL}${post.mediaPath}`} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
@@ -142,7 +145,7 @@ export default function PostCard({
               <img
                 src={`${API_POSTS_URL}${post.mediaPath}`}
                 alt="Post media"
-                className="w-full max-h-80 object-contain rounded-lg"
+                className="w-full max-h-[400px] object-cover rounded-lg shadow-lg"
               />
             )}
           </div>

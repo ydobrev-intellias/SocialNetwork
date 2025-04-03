@@ -50,7 +50,9 @@ export default function Header() {
 
   useEffect(() => {
     setQuery('');
-    dispatch(getProfile({}));
+    if (isAuthenticated) {
+      dispatch(getProfile({}));
+    }
   }, [dispatch, isAuthenticated, navigate]);
 
   return (
@@ -58,7 +60,7 @@ export default function Header() {
       <div className="container mx-auto flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
           <Link to="/" className="text-xl font-bold text-gray-900">
-            SocialX
+            SocialNet
           </Link>
         </div>
 

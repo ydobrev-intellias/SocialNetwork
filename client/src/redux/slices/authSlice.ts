@@ -123,6 +123,42 @@ export const getProfile = createAsyncThunk(
   },
 );
 
+export const followUser = createAsyncThunk(
+  'auth/followUser',
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_USERS_URL}/follow/${userId}`,
+        {},
+        { withCredentials: true },
+      );
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error.response?.data);
+      }
+    }
+  },
+);
+
+export const unfollowUser = createAsyncThunk(
+  'auth/unfollowUser',
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_USERS_URL}/unfollow/${userId}`,
+        {},
+        { withCredentials: true },
+      );
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error.response?.data);
+      }
+    }
+  },
+);
+
 export const updateProfile = createAsyncThunk(
   'user/updateProfile',
   async (
@@ -232,7 +268,6 @@ export const deleteContact = createAsyncThunk(
     } catch (error) {
       if (error instanceof AxiosError) {
         return rejectWithValue(error.response?.data);
-        // handleError(error, rejectWithValue, dispatch);
       }
     }
   },
@@ -243,14 +278,16 @@ export const updateContact = createAsyncThunk(
   async (contactData: Partial<Contact>, { getState, rejectWithValue }) => {
     const state = getState() as RootState;
 
+    const { id: contactId, ...contactDataWithoutId } = contactData;
     try {
       if (!state.auth.user) {
         return rejectWithValue('User not found');
       }
+      console.log('ContactData', contactDataWithoutId);
 
       const response = await axios.patch(
-        `${API_USERS_URL}/${state.auth.user.id}/contacts/${contactData.id}`,
-        contactData,
+        `${API_USERS_URL}/${state.auth.user.id}/contacts/${contactId}`,
+        contactDataWithoutId,
         {
           withCredentials: true,
         },
@@ -346,7 +383,9 @@ const authSlice = createSlice({
       .addCase(updateProfile.fulfilled, (state, action: PayloadAction<any>) => {
         console.log('update profile fullfiled current state', current(state));
         console.log('update profile fullfiled action.payload', action.payload);
-
+        if (!action.payload?.isOwnProfile) {
+          return;
+        }
         state.user = { ...state.user, ...action.payload };
         state.isAdmin = action.payload?.role === Role.ADMIN ? true : false;
       })

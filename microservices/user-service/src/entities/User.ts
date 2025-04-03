@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Contact } from './Contact';
-import { Follower } from './Follower';
+import { Follow } from './Follow';
 import { Role } from '../types/user';
 
 @Entity('users')
@@ -22,9 +22,9 @@ export class User {
   @Column({ nullable: true })
   coverPath: string;
 
-  @OneToMany(() => Follower, (follower) => follower.following)
-  followers: Follower[];
+  @OneToMany(() => Follow, (follow) => follow.following)
+  followers: Follow[];
 
-  @OneToMany(() => Follower, (follower) => follower.follower)
-  following: Follower[];
+  @OneToMany(() => Follow, (follow) => follow.follower)
+  following: Follow[];
 }

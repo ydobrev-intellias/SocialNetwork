@@ -89,20 +89,20 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-end items-center">
-          <button onClick={onClose}>
+          <button onClick={onClose} className="cursor-pointer">
             <X size={20} />
           </button>
         </div>
 
         {originalPost && (
-          <div className="mt-4 p-3 border border-gray-300 bg-gray-100 rounded-md">
-            <CardHeader className="flex flex-row items-center space-x-3">
+          <div className="mt-6 p-5 bg-white border border-gray-300 rounded-xl">
+            <CardHeader className="flex items-center space-x-4">
               <UserProfileLink activity={originalPost} />
               <div>
-                <CardTitle className="text-sm font-semibold">
+                <CardTitle className="text-lg font-semibold text-gray-800">
                   {originalPost?.ownerProfile?.username}
                 </CardTitle>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   {originalPost?.updatedAt
                     ? `Last updated: ${format(new Date(originalPost.updatedAt), 'dd MMM yyyy, HH:mm')}`
                     : `Posted on: ${format(new Date(originalPost.createdAt), 'dd MMM yyyy, HH:mm')}`}
@@ -110,21 +110,22 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
               </div>
             </CardHeader>
 
-            <CardContent>
-              <p className="text-gray-700">{originalPost.content}</p>
+            <CardContent className="mt-4">
+              <p className="text-gray-800 leading-relaxed">{originalPost.content}</p>
 
               {originalPost.mediaPath && (
-                <div className="mt-3">
+                <div className="mt-4 relative overflow-hidden rounded-lg shadow-md">
                   {originalPost.mediaPath.endsWith('.mp4') ||
                   originalPost.mediaPath.endsWith('.webm') ? (
-                    <video controls className="w-full max-h-80 object-contain rounded-lg">
+                    <video controls className="w-full max-h-[400px] object-cover rounded-lg">
                       <source src={`${API_POSTS_URL}${originalPost.mediaPath}`} type="video/mp4" />
+                      Your browser does not support the video tag.
                     </video>
                   ) : (
                     <img
                       src={`${API_POSTS_URL}${originalPost.mediaPath}`}
                       alt="Post media"
-                      className="w-full max-h-80 object-contain rounded-lg"
+                      className="w-full max-h-[400px] object-cover rounded-lg"
                     />
                   )}
                 </div>
