@@ -149,7 +149,6 @@ export const getActivityWall = async (ctx: Context) => {
       relations: { reposts: true, likes: true, originalPost: true, comments: true },
     });
 
-    console.log('COOL WER ARE HERE 1');
     for (let post of posts) {
       const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${post.ownerId}`, {
         withCredentials: true,
@@ -182,27 +181,83 @@ export const getActivityWall = async (ctx: Context) => {
     });
   } else if (role === 'user') {
     posts = await postRepository.find({
-      where: [{ privacy: PostPrivacy.PUBLIC }, { privacy: PostPrivacy.PRIVATE, ownerId: userId }],
+      where: [
+        { privacy: PostPrivacy.PUBLIC },
+        { privacy: PostPrivacy.PRIVATE, ownerId: userId },
+        { privacy: PostPrivacy.FOLLOWERS },
+      ],
       relations: { reposts: true, likes: true, originalPost: true, comments: true },
     });
   }
 
-  for (let post of posts) {
-    const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${post.ownerId}`, {
-      withCredentials: true,
-    });
-    post.ownerProfile = ownerProfileResponse.data;
-    if (post.isRepost) {
-      const repostOwnerProfileResponse = await axios.get(
-        `${config.userServiceUrl}/${post.originalPost?.ownerId}`,
-        {
+  posts = await Promise.all(
+    posts.map(async (post: any) => {
+      try {
+        const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${post.ownerId}`, {
           withCredentials: true,
-        },
-      );
-      post.originalPost.ownerProfile = repostOwnerProfileResponse.data;
-    }
-  }
-  console.log('posts', posts);
+        });
+
+        console.log('OwnerProfileResponse', ownerProfileResponse.data);
+
+        const isFollower = ownerProfileResponse.data.followers?.some(
+          (follow: any) => follow.follower.id === userId,
+        );
+
+        console.log('isFollower', isFollower);
+
+        if (
+          post.privacy === PostPrivacy.FOLLOWERS &&
+          post.ownerId !== userId &&
+          !isFollower &&
+          role !== 'admin'
+        ) {
+          return null;
+        }
+
+        post.ownerProfile = ownerProfileResponse.data;
+
+        if (post.isRepost && post.originalPost) {
+          const repostOwnerProfileResponse = await axios.get(
+            `${config.userServiceUrl}/${post.originalPost.ownerId}`,
+            { withCredentials: true },
+          );
+          post.originalPost.ownerProfile = repostOwnerProfileResponse.data;
+        }
+
+        return post;
+      } catch (error) {
+        console.error(`Error fetching profile for user ${post.ownerId}:`, error);
+        return null;
+      }
+    }),
+  );
+
+  posts = posts.filter((post: any) => post !== null);
+
+  // for (let post of posts) {
+  //   const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${post.ownerId}`, {
+  //     withCredentials: true,
+  //   });
+  //   console.log('OwnerProfileReponse', ownerProfileResponse);
+  //   const isFollower = ownerProfileResponse.data.followers.find(
+  //     (follow: any) => follow.follower.id === userId,
+  //   );
+  //   console.log('isFollower', isFollower);
+  //   if (userId !== post.ownerId && !isFollower) {
+  //   }
+
+  //   post.ownerProfile = ownerProfileResponse.data;
+  //   if (post.isRepost) {
+  //     const repostOwnerProfileResponse = await axios.get(
+  //       `${config.userServiceUrl}/${post.originalPost?.ownerId}`,
+  //       {
+  //         withCredentials: true,
+  //       },
+  //     );
+  //     post.originalPost.ownerProfile = repostOwnerProfileResponse.data;
+  //   }
+  // }
+  // console.log('posts', posts);
   return posts;
 };
 
