@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Contact, User } from '@/types/user';
+import { Contact, Role, User } from '@/types/user';
 import { Follow } from '@/types/follow';
 import UserProfileLink from '@/components/user/UserProfileLink';
 
@@ -252,6 +252,7 @@ export default function ProfilePage() {
           <div>
             <h2 className="text-xl font-semibold">{user?.username}</h2>
             <p className="text-gray-500">{user?.email}</p>
+            {user?.role === Role.ADMIN && <p className="text-gray-400">Admininistrator</p>}
           </div>
 
           <div className="flex gap-6 text-center">
