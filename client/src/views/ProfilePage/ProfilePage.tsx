@@ -35,11 +35,11 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { Contact, User } from '@/types/user';
 import { Follow } from '@/types/follow';
+import UserProfileLink from '@/components/user/UserProfileLink';
 
 export default function ProfilePage() {
   const { user: authUser, isAdmin } = useSelector((state: RootState) => state.auth);
   const [user, setUser] = useState<User>();
-  console.log('isAdmin', isAdmin);
 
   const { userId } = useParams<{ userId?: string }>();
   const isOwnProfile = authUser?.id === user?.id;
@@ -65,6 +65,9 @@ export default function ProfilePage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
 
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followingModalOpen, setFollowingModalOpen] = useState(false);
+
   const handleDeleteProfile = async () => {
     await dispatch(deleteUser(isAdmin ? { userId } : {}));
     setIsDeleteModalOpen(false);
@@ -89,19 +92,15 @@ export default function ProfilePage() {
     if (isEditingProfile && user) {
       setFormData({ username: user.username, email: user.email });
     }
-    console.log('IsEditingProfile', isEditingProfile);
     getUserProfile();
   }, [userId, isEditingProfile]);
 
   const getUserProfile = async () => {
     try {
       const response = await dispatch(getProfile({ userId })).unwrap();
-      console.log('Profile fetched:', response?.data);
       setUser(response?.data);
 
       if (response?.data && authUser) {
-        console.log('followers', response.data.followers);
-
         setIsFollowing(
           response.data.followers?.some((follow: Follow) => follow.follower?.id === authUser.id) ||
             false,
@@ -152,7 +151,7 @@ export default function ProfilePage() {
         prev
           ? {
               ...prev,
-              followers: [...(prev.followers || []), { id: authUser?.id }],
+              followers: [...(prev.followers || []), { id: authUser?.id, follower: authUser }],
             }
           : prev,
       );
@@ -256,11 +255,17 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex gap-6 text-center">
-            <div>
+            <div
+              className="cursor-pointer hover:bg-gray-100 p-2 rounded-md transition"
+              onClick={() => setFollowersModalOpen(true)}
+            >
               <p className="font-semibold text-lg">{user?.followers?.length || 0}</p>
               <p className="text-sm text-gray-500">Followers</p>
             </div>
-            <div>
+            <div
+              className="cursor-pointer hover:bg-gray-100 p-2 rounded-md transition"
+              onClick={() => setFollowingModalOpen(true)}
+            >
               <p className="font-semibold text-lg">{user?.following?.length || 0}</p>
               <p className="text-sm text-gray-500">Following</p>
             </div>
@@ -373,6 +378,58 @@ export default function ProfilePage() {
           </>
         )}
       </CardContent>
+
+      <Dialog open={followersModalOpen} onOpenChange={setFollowersModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle>Followers</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto py-4">
+            {user?.followers?.length ? (
+              user.followers.map(
+                (follow: Follow) =>
+                  follow.follower && (
+                    <div
+                      key={follow.id}
+                      className="mb-2"
+                      onClick={() => setFollowersModalOpen(false)}
+                    >
+                      <UserProfileLink user={follow.follower} />
+                    </div>
+                  ),
+              )
+            ) : (
+              <p className="text-center text-gray-500 py-4">No followers yet</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={followingModalOpen} onOpenChange={setFollowingModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle>Following</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto py-4">
+            {user?.following?.length ? (
+              user.following.map(
+                (follow: Follow) =>
+                  follow.following && (
+                    <div
+                      key={follow.id}
+                      className="mb-2"
+                      onClick={() => setFollowingModalOpen(false)}
+                    >
+                      <UserProfileLink user={follow.following} />
+                    </div>
+                  ),
+              )
+            ) : (
+              <p className="text-center text-gray-500 py-4">Not following anyone yet</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {(isOwnProfile || isAdmin) && isEditingProfile && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
