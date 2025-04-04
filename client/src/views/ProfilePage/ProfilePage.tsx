@@ -84,7 +84,7 @@ export default function ProfilePage() {
       reader.readAsDataURL(file);
       await dispatch(uploadImage({ file, type }));
 
-      getUserProfile();
+      await getUserProfile();
     }
   };
 
@@ -93,7 +93,7 @@ export default function ProfilePage() {
       setFormData({ username: user.username, email: user.email });
     }
     getUserProfile();
-  }, [userId, isEditingProfile]);
+  }, [userId, isEditingProfile, setUser]);
 
   const getUserProfile = async () => {
     try {
@@ -107,7 +107,7 @@ export default function ProfilePage() {
         );
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      navigate('/');
     }
   };
 
@@ -252,7 +252,7 @@ export default function ProfilePage() {
           <div>
             <h2 className="text-xl font-semibold">{user?.username}</h2>
             <p className="text-gray-500">{user?.email}</p>
-            {user?.role === Role.ADMIN && <p className="text-gray-400">Admininistrator</p>}
+            {user?.role === Role.ADMIN && <p className="text-gray-400">Administrator</p>}
           </div>
 
           <div className="flex gap-6 text-center">
