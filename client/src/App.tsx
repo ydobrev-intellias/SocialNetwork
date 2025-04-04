@@ -12,7 +12,7 @@ function App() {
     <BrowserRouter>
       <div className="flex min-h-screen">
         <Sidebar />
-        <div className="ml-64 flex-1">
+        <div className="ml-32 md:ml-64 flex-1 px-5">
           <div className="max-w-2xl min-h-screen flex flex-col mx-auto items-center py-10">
             <Routes>
               <Route index element={<ActivityWall />} />

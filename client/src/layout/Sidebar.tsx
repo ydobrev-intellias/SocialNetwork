@@ -162,7 +162,7 @@ export default function Sidebar() {
         </div>
       )}
 
-      <aside className="fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-40 flex flex-col">
+      <aside className="fixed top-0 left-0 h-full min-w-32 md:w-64 bg-white shadow-lg z-40 flex flex-col">
         <div className="p-4 border-b">
           <Link to="/" className="text-xl font-bold text-gray-900 flex items-center justify-center">
             SocialNet

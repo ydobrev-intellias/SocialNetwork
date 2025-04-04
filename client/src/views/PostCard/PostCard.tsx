@@ -226,14 +226,15 @@ export default function PostCard({
             </Button>
           )}
           {(isOwner || isAdmin) && (
-            <button
+            <Button
+              variant="outline"
               onClick={(e) => {
                 e.stopPropagation();
                 handleDelete(post.id);
               }}
             >
               Delete post
-            </button>
+            </Button>
           )}
         </div>
       </CardContent>
