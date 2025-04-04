@@ -9,7 +9,7 @@ interface SearchParams {
 
 export const search = async (ctx: Context) => {
   const { query, role } = ctx.query;
-
+  const userHeaders = ctx.headers['x-auth-user-data'];
   if (!query || Array.isArray(query)) {
     ctx.throw(400, 'Query parameter is required and must be a string.');
   }
@@ -25,10 +25,12 @@ export const search = async (ctx: Context) => {
   const postQueryString = new URLSearchParams(searchParams as any).toString();
 
   const userResponse = await axios.get(`${config.userServiceUrl}/search?${userQueryString}`, {
+    headers: { Cookie: ctx.headers.cookie, 'X-Auth-User-Data': userHeaders },
     withCredentials: true,
   });
 
   const postResponse = await axios.get(`${config.postServiceUrl}/search?${postQueryString}`, {
+    headers: { Cookie: ctx.headers.cookie, 'X-Auth-User-Data': userHeaders },
     withCredentials: true,
   });
 

@@ -4,16 +4,15 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
 import { Comment } from '@/types/comment';
 import { Post } from '@/types/post';
-import { User } from '@/types/user';
 
 const UserProfileLink = ({
   activity,
   user,
-  inSearch,
+  withLink = true,
 }: {
   activity?: Comment | Post;
-  user?: User;
-  inSearch?: boolean;
+  user?: any;
+  withLink?: boolean;
 }) => {
   const profileId = activity ? activity?.ownerProfile?.id : user?.id;
   const username = activity ? activity?.ownerProfile?.username : user?.username;
@@ -31,7 +30,7 @@ const UserProfileLink = ({
     </div>
   );
 
-  if (inSearch) {
+  if (!withLink) {
     return content;
   }
 

@@ -99,6 +99,7 @@ export default function CreatePostModal({
               className="mt-2 p-2 border border-gray-300 rounded-md w-full"
             >
               <option value="public">Public</option>
+              <option value="followers">Followers</option>
               <option value="private">Private</option>
             </select>
           </div>

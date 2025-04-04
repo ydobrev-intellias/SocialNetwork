@@ -9,7 +9,7 @@ import PostModal from '../PostModal/PostModal';
 import { deletePost, getPosts, toggleLike } from '@/redux/slices/postSlice';
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
 import UserProfileLink from '@/components/user/UserProfileLink';
-import { Post } from '@/types/post';
+import { Post, PostPrivacy } from '@/types/post';
 import { Like } from '@/types/like';
 import { Mode } from '@/types/common';
 import { useNavigate } from 'react-router';
@@ -79,6 +79,9 @@ export default function PostCard({
               ? `Last updated: ${format(new Date(post.updatedAt), 'dd MMM yyyy, HH:mm')}`
               : `${post.isRepost ? 'Reposted on' : 'Posted on'} ${format(new Date(post.createdAt), 'dd MMM yyyy, HH:mm')}`}
           </p>
+          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+            {post?.privacy}
+          </span>
         </div>
       </CardHeader>
 
@@ -194,7 +197,7 @@ export default function PostCard({
             </div>
           )}
 
-          {!post.isRepost && isAuthenticated && !isOwner && (
+          {!post.isRepost && post.privacy == PostPrivacy.PUBLIC && isAuthenticated && !isOwner && (
             <Button
               variant="ghost"
               size="sm"
@@ -223,14 +226,15 @@ export default function PostCard({
             </Button>
           )}
           {(isOwner || isAdmin) && (
-            <button
+            <Button
+              variant="outline"
               onClick={(e) => {
                 e.stopPropagation();
                 handleDelete(post.id);
               }}
             >
               Delete post
-            </button>
+            </Button>
           )}
         </div>
       </CardContent>

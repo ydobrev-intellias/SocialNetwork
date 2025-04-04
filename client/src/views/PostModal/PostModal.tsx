@@ -29,7 +29,7 @@ interface PostModalProps {
 export default function PostModal({ postId, onClose }: PostModalProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState('');
-  const [originalPost, setOriginalPost] = useState<Post>();
+  const [post, setPost] = useState<Post>();
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [editingComment, setEditingComment] = useState<Partial<Comment>>();
@@ -51,7 +51,7 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
         withCredentials: true,
       });
       console.log('PostModal post', response.data);
-      setOriginalPost(response.data);
+      setPost(response.data);
     } catch (error) {
       console.error('Error fetching post:', error);
     }
@@ -60,7 +60,7 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
   useEffect(() => {
     getComments();
     getPost();
-  }, [postId, setOriginalPost]);
+  }, [postId, setPost]);
 
   const createCommentHandler = async () => {
     if (!content.trim()) return;
@@ -94,36 +94,38 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
           </button>
         </div>
 
-        {originalPost && (
+        {post && (
           <div className="mt-6 p-5 bg-white border border-gray-300 rounded-xl">
             <CardHeader className="flex items-center space-x-4">
-              <UserProfileLink activity={originalPost} />
+              <UserProfileLink activity={post} />
               <div>
                 <CardTitle className="text-lg font-semibold text-gray-800">
-                  {originalPost?.ownerProfile?.username}
+                  {post?.ownerProfile?.username}
                 </CardTitle>
                 <p className="text-sm text-gray-500">
-                  {originalPost?.updatedAt
-                    ? `Last updated: ${format(new Date(originalPost.updatedAt), 'dd MMM yyyy, HH:mm')}`
-                    : `Posted on: ${format(new Date(originalPost.createdAt), 'dd MMM yyyy, HH:mm')}`}
+                  {post?.updatedAt
+                    ? `Last updated: ${format(new Date(post.updatedAt), 'dd MMM yyyy, HH:mm')}`
+                    : `Posted on: ${format(new Date(post.createdAt), 'dd MMM yyyy, HH:mm')}`}
                 </p>
+                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                  {post?.privacy}
+                </span>
               </div>
             </CardHeader>
 
             <CardContent className="mt-4">
-              <p className="text-gray-800 leading-relaxed">{originalPost.content}</p>
+              <p className="text-gray-800 leading-relaxed">{post.content}</p>
 
-              {originalPost.mediaPath && (
+              {post.mediaPath && (
                 <div className="mt-4 relative overflow-hidden rounded-lg shadow-md">
-                  {originalPost.mediaPath.endsWith('.mp4') ||
-                  originalPost.mediaPath.endsWith('.webm') ? (
+                  {post.mediaPath.endsWith('.mp4') || post.mediaPath.endsWith('.webm') ? (
                     <video controls className="w-full max-h-[400px] object-cover rounded-lg">
-                      <source src={`${API_POSTS_URL}${originalPost.mediaPath}`} type="video/mp4" />
+                      <source src={`${API_POSTS_URL}${post.mediaPath}`} type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
                   ) : (
                     <img
-                      src={`${API_POSTS_URL}${originalPost.mediaPath}`}
+                      src={`${API_POSTS_URL}${post.mediaPath}`}
                       alt="Post media"
                       className="w-full max-h-[400px] object-cover rounded-lg"
                     />

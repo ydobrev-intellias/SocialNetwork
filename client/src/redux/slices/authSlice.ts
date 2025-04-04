@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { createAsyncThunk, createSlice, current, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { API_AUTH_URL, API_USERS_URL } from '../../config';
 import { RootState } from '../store';
 import { Status } from '@/types/common';
@@ -88,7 +88,7 @@ export const uploadImage = createAsyncThunk(
         },
       );
 
-      return response.data;
+      return { ...response.data, type };
     } catch (error) {
       if (error instanceof AxiosError) {
         console.log(error.response);
@@ -372,17 +372,28 @@ const authSlice = createSlice({
           state.user.coverPath = action.payload?.data?.coverPath ?? '';
         }
       })
-      .addCase(uploadImage.fulfilled, (state, action: PayloadAction<any>) => {
-        console.log('Payload', action.payload);
-        console.log('User', state.user);
+      .addCase(uploadImage.pending, (state, action) => {
         if (state.user) {
-          state.user.avatarPath = action.payload?.avatarPath ?? '';
-          state.user.coverPath = action.payload?.coverPath ?? '';
+          if (action.meta.arg.type === 'avatar') {
+            state.user.avatarPath = null;
+          } else {
+            state.user.coverPath = null;
+          }
+        }
+        console.log('Upload image pending', action.meta.arg.type);
+      })
+      .addCase(uploadImage.fulfilled, (state, action: PayloadAction<any>) => {
+        console.log('Upload image Payload', action.payload);
+        console.log('Upload image User', state.user);
+        if (state.user) {
+          if (action.payload.type === 'avatar') {
+            state.user.avatarPath = action.payload?.path ?? '';
+          } else {
+            state.user.coverPath = action.payload?.path ?? '';
+          }
         }
       })
       .addCase(updateProfile.fulfilled, (state, action: PayloadAction<any>) => {
-        console.log('update profile fullfiled current state', current(state));
-        console.log('update profile fullfiled action.payload', action.payload);
         if (!action.payload?.isOwnProfile) {
           return;
         }
