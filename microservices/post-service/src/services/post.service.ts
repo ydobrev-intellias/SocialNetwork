@@ -12,11 +12,9 @@ import { RepostWithOwnerProfile } from '../types/post';
 
 export const createPost = async (ctx: Context) => {
   const body = ctx.request.body as Post;
-  console.log('body', body);
   const { id: ownerId, username: ownerUsername } = JSON.parse(
     ctx.headers['x-auth-user-data'] as string,
   );
-  console.log('CREATE POST AFTER JSON PARSE');
 
   const postRepository = AppDataSource.getRepository(Post);
   const newPost = postRepository.create({ ...body, ownerId } as Object);
@@ -48,7 +46,6 @@ export const getPost = async (ctx: Context) => {
   }
   const userHeaders = ctx.headers['x-auth-user-data'];
   if (!userHeaders) {
-    console.log('post.privacy', post.privacy);
     if (post.privacy === PostPrivacy.PRIVATE) {
       ctx.throw(403, 'Unauthorized to view this post');
     }
@@ -110,8 +107,6 @@ export const updatePost = async (ctx: Context) => {
   const body = ctx.request.body as Partial<Post>;
   const { id: ownerId, role } = JSON.parse(ctx.headers['x-auth-user-data'] as string);
 
-  console.log('UPDATE POST BODY', body);
-
   const postRepository = AppDataSource.getRepository(Post);
   const post = await postRepository.findOne({ where: { id: postId } });
 
@@ -128,7 +123,6 @@ export const updatePost = async (ctx: Context) => {
   const { files } = ctx.request as any;
 
   if (files && files.file) {
-    console.log('UPDATE POST FILE UPLOADED');
     const media = Array.isArray(files.file) ? files.file[0] : files.file;
     const ext = media.filepath.split('.').pop() as string;
     const path = await uploadFile(media.filepath, post.id, ext);
@@ -166,9 +160,7 @@ export const getActivityWall = async (ctx: Context) => {
     }
     return posts;
   }
-  console.log('userHeaders', userHeaders);
   const { id: userId, role } = JSON.parse(userHeaders as string);
-  console.log('COOL WER ARE HERE 2');
 
   if (role === 'admin') {
     posts = await postRepository.find({
@@ -197,13 +189,9 @@ export const getActivityWall = async (ctx: Context) => {
           withCredentials: true,
         });
 
-        console.log('OwnerProfileResponse', ownerProfileResponse.data);
-
         const isFollower = ownerProfileResponse.data.followers?.some(
           (follow: any) => follow.follower.id === userId,
         );
-
-        console.log('isFollower', isFollower);
 
         if (
           post.privacy === PostPrivacy.FOLLOWERS &&
@@ -234,30 +222,6 @@ export const getActivityWall = async (ctx: Context) => {
 
   posts = posts.filter((post: any) => post !== null);
 
-  // for (let post of posts) {
-  //   const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${post.ownerId}`, {
-  //     withCredentials: true,
-  //   });
-  //   console.log('OwnerProfileReponse', ownerProfileResponse);
-  //   const isFollower = ownerProfileResponse.data.followers.find(
-  //     (follow: any) => follow.follower.id === userId,
-  //   );
-  //   console.log('isFollower', isFollower);
-  //   if (userId !== post.ownerId && !isFollower) {
-  //   }
-
-  //   post.ownerProfile = ownerProfileResponse.data;
-  //   if (post.isRepost) {
-  //     const repostOwnerProfileResponse = await axios.get(
-  //       `${config.userServiceUrl}/${post.originalPost?.ownerId}`,
-  //       {
-  //         withCredentials: true,
-  //       },
-  //     );
-  //     post.originalPost.ownerProfile = repostOwnerProfileResponse.data;
-  //   }
-  // }
-  // console.log('posts', posts);
   return posts;
 };
 

@@ -6,4 +6,5 @@ export const config = {
   environment: process.env.NODE_ENV || 'development',
   databaseUrl: process.env.DATABASE_URL || '',
   userServiceUrl: process.env.USER_SERVICE_URL || '',
+  rabbitmqUrl: process.env.RABBITMQ_URL || '',
 };
