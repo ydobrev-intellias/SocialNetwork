@@ -5,7 +5,6 @@ import router from './routes';
 import koaBody from 'koa-body';
 import { connectDB } from './data-source';
 import serve from 'koa-static';
-import { consumeMessages } from './rabbitmq/consumer';
 import fs from 'fs';
 import path from 'path';
 import { errorHandler } from './middlewares/errorHandler';
@@ -28,6 +27,5 @@ app.use(serve(path.join(__dirname, '../uploads')));
 app.use(router.routes()).use(router.allowedMethods());
 
 app.listen(config.port, async () => {
-  await consumeMessages();
   console.log(`User-service running on port ${config.port} in ${config.environment} environment`);
 });
