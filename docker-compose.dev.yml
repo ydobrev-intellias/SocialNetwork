@@ -12,6 +12,7 @@ services:
       - user-service
       - post-service
       - auth-service
+      - message-service
     networks:
       - app_network
 
@@ -48,6 +49,19 @@ services:
     container_name: postgres_post
     ports:
       - '${POSTGRES_POST_PORT}:${POSTGRES_DEFAULT_PORT}'
+    networks:
+      - app_network
+  postgres_message:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER_MESSAGE}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_MESSAGE}
+      POSTGRES_DB: ${POSTGRES_DB_MESSAGE}
+    volumes:
+      - postgres_message_data:/var/lib/postgresql/data
+    container_name: postgres_message
+    ports:
+      - '${POSTGRES_MESSAGE_PORT}:${POSTGRES_DEFAULT_PORT}'
     networks:
       - app_network
 
@@ -175,6 +189,26 @@ services:
     command: sh -c "npm install && npm run dev"
     networks:
       - app_network
+  message-service:
+    container_name: message-service
+    build:
+      context: ./microservices/message-service
+      args:
+        BUILD_ENV: development
+    volumes:
+      - ./microservices/message-service:/app
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${MESSAGE_SERVICE_PORT}
+      - DATABASE_URL=${DATABASE_URL_MESSAGE}
+    depends_on:
+      - postgres_message
+      - redis
+    command: sh -c "npm install && npm run dev"
+    networks:
+      - app_network
 
   redis:
     image: redis:alpine
@@ -200,6 +234,7 @@ volumes:
   postgres_post_data:
   postgres_user_data:
   postgres_auth_data:
+  postgres_message_data:
   redis_data:
 
 networks:
