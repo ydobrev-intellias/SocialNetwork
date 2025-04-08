@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
-import { Home, LogOut, Search, Users, X } from 'lucide-react';
+import { Home, LogOut, MessageSquare, Search, Users, X } from 'lucide-react';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getProfile, signOut } from '@/redux/slices/authSlice';
@@ -201,7 +201,7 @@ export default function Sidebar() {
 
             {isAuthenticated && (
               <>
-                {/* <li>
+                <li>
                   <Link
                     to="/messages"
                     className={`flex items-center space-x-3 p-3 rounded-lg ${isActive('/messages')}`}
@@ -210,7 +210,7 @@ export default function Sidebar() {
                     <span>Messages</span>
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link
                     to="/notifications"
                     className={`flex items-center space-x-3 p-3 rounded-lg ${isActive('/notifications')}`}

@@ -3,6 +3,7 @@ import Router from 'koa-router';
 import {
   createUserController,
   deleteUserController,
+  getAllUsersController,
   getProfileController,
   updateUserController,
   uploadAvatarController,
@@ -19,6 +20,7 @@ router.post('/', createUserController);
 router.patch('/:userId', updateUserController);
 router.delete('/:userId', deleteUserController);
 
+router.get('/', getAllUsersController);
 router.get('/:userId', getProfileController);
 router.post(
   '/:userId/avatar',
