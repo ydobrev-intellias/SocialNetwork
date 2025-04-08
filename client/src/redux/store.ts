@@ -5,14 +5,14 @@ import socketReducer from './slices/socketSlice';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage/session';
 import { createSocketMiddleware } from '@/middlewares/socketMiddleware';
-import { API_MESSAGE_URL } from '@/config';
+import { API_BASE_URL_WS } from '@/config';
 
 const persistConfig = {
   key: 'root',
   storage,
 };
 
-const socketMiddleware = createSocketMiddleware(`${API_MESSAGE_URL}`.substring(0, 21));
+const socketMiddleware = createSocketMiddleware(API_BASE_URL_WS);
 
 const rootReducer = combineReducers({
   auth: authReducer,

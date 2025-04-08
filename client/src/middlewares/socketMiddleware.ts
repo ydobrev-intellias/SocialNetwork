@@ -1,6 +1,7 @@
 import { Middleware } from '@reduxjs/toolkit';
 import { io, Socket } from 'socket.io-client';
 import { socketActions } from '@/redux/slices/socketSlice';
+import { API_MESSAGE_PATH } from '@/config';
 
 let socket: Socket | null = null;
 
@@ -8,8 +9,8 @@ export const createSocketMiddleware = (url: string): Middleware => {
   return (store) => (next) => (action) => {
     if (socketActions.connect.match(action)) {
       if (!socket) {
-        console.log(action.payload.userId);
         socket = io(url, {
+          path: API_MESSAGE_PATH,
           query: {
             userId: action.payload.userId,
           },
