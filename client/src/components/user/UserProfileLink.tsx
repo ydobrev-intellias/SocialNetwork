@@ -9,10 +9,12 @@ const UserProfileLink = ({
   activity,
   user,
   withLink = true,
+  withName = true,
 }: {
   activity?: Comment | Post;
   user?: any;
   withLink?: boolean;
+  withName?: boolean;
 }) => {
   const profileId = activity ? activity?.ownerProfile?.id : user?.id;
   const username = activity ? activity?.ownerProfile?.username : user?.username;
@@ -26,7 +28,7 @@ const UserProfileLink = ({
         <AvatarImage className="object-cover" src={avatarSrc} />
         <AvatarFallback>{username?.[0]?.toLocaleUpperCase()}</AvatarFallback>
       </Avatar>
-      {user && <span>{username}</span>}
+      {user && withName && <span>{username}</span>}
     </div>
   );
 
