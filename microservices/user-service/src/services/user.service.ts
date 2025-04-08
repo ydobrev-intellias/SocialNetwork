@@ -153,3 +153,8 @@ export const updateUser = async (ctx: Context) => {
 
   return await userRepository.save(user);
 };
+
+export const getAllUsers = async () => {
+  const userRepository = AppDataSource.getRepository(User);
+  return await userRepository.find();
+};

@@ -2,6 +2,7 @@ import { Context } from 'koa';
 import {
   createUser,
   deleteUser,
+  getAllUsers,
   getProfile,
   updateUser,
   uploadAvatar,
@@ -13,6 +14,11 @@ export const getProfileController = async (ctx: Context) => {
 
   ctx.status = 200;
   ctx.body = profile;
+};
+export const getAllUsersController = async (ctx: Context) => {
+  const users = await getAllUsers();
+  ctx.status = 200;
+  ctx.body = users;
 };
 
 export const uploadAvatarController = async (ctx: Context) => {
