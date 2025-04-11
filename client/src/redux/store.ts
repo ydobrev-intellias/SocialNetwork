@@ -1,23 +1,27 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import postReducer from './slices/postSlice';
-import socketReducer from './slices/socketSlice';
+import messageReducer from './slices/messageSlice';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage/session';
-import { createSocketMiddleware } from '@/middlewares/socketMiddleware';
 import { API_BASE_URL_WS } from '@/config';
+import { createMessageSocketMiddleware } from '@/middlewares/messageSocketMiddleware';
+import { createNotificationSocketMiddleware } from '@/middlewares/notificationSocketMiddleware';
+import notificationReducer from './slices/notificationSlice';
 
 const persistConfig = {
   key: 'root',
   storage,
 };
 
-const socketMiddleware = createSocketMiddleware(API_BASE_URL_WS);
+const messageSocketMiddleware = createMessageSocketMiddleware(API_BASE_URL_WS);
+const notificationSocketMiddleware = createNotificationSocketMiddleware(API_BASE_URL_WS);
 
 const rootReducer = combineReducers({
   auth: authReducer,
   post: postReducer,
-  socket: socketReducer,
+  message: messageReducer,
+  notification: notificationReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -26,7 +30,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(socketMiddleware),
+    }).concat(messageSocketMiddleware, notificationSocketMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

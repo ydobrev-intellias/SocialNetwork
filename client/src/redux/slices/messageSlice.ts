@@ -9,22 +9,22 @@ interface Message {
   timestamp?: Date;
 }
 
-interface SocketState {
+interface MessageState {
   isConnected: boolean;
   messages: Message[];
   selectedUser: User | null;
   error: string | null;
 }
 
-const initialState: SocketState = {
+const initialState: MessageState = {
   isConnected: false,
   messages: [],
   selectedUser: null,
   error: null,
 };
 
-export const socketSlice = createSlice({
-  name: 'socket',
+export const messageSlice = createSlice({
+  name: 'message',
   initialState,
   reducers: {
     connect: (_state, _action: PayloadAction<{ userId: string }>) => {},
@@ -61,5 +61,5 @@ export const socketSlice = createSlice({
   },
 });
 
-export const socketActions = socketSlice.actions;
-export default socketSlice.reducer;
+export const messageActions = messageSlice.actions;
+export default messageSlice.reducer;
