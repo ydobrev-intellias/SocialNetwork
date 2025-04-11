@@ -2,6 +2,7 @@ import { Context } from 'koa';
 import { AppDataSource } from '../data-source';
 import { User } from '../entities/User';
 import { Follow } from '../entities/Follow';
+import { produceMessages } from '../rabbitmq/producer';
 
 export const follow = async (ctx: Context) => {
   const { userId } = ctx.params;
@@ -39,6 +40,13 @@ export const follow = async (ctx: Context) => {
   follow.following = user;
 
   await followRepository.save(follow);
+
+  produceMessages('ownerNotifications', {
+    content: `${followerUser.username} started following you`,
+    targetId: followerUser.id,
+    ownerId: userId,
+    createdAt: new Date(),
+  });
 };
 
 export const unfollow = async (ctx: Context) => {
@@ -60,6 +68,10 @@ export const unfollow = async (ctx: Context) => {
   if (followerId === userId) {
     ctx.throw(403, 'Forbidden from unfollowing yourself');
   }
+  const followerUser = await userRepository.findOne({ where: { id: followerId } });
+  if (!followerUser) {
+    ctx.throw(404, 'Follower does not exist');
+  }
 
   const followRepository = AppDataSource.getRepository(Follow);
   const existingFollow = await followRepository.findOne({
@@ -71,4 +83,11 @@ export const unfollow = async (ctx: Context) => {
   }
 
   await followRepository.remove(existingFollow);
+
+  produceMessages('ownerNotifications', {
+    content: `${followerUser.username} stopped following you`,
+    targetId: followerUser.id,
+    ownerId: userId,
+    createdAt: new Date(),
+  });
 };

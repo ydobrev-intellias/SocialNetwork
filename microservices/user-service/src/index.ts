@@ -8,24 +8,30 @@ import serve from 'koa-static';
 import fs from 'fs';
 import path from 'path';
 import { errorHandler } from './middlewares/errorHandler';
+import { connectToRabbitMQ } from './rabbitmq/connection';
 
-const app = new Koa();
+async function startup() {
+  const app = new Koa();
 
-const uploadDir = path.join(__dirname, '../uploads');
+  const uploadDir = path.join(__dirname, '../uploads');
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  await connectDB();
+  await connectToRabbitMQ();
+  app.use(cors({ credentials: true }));
+  app.use(errorHandler);
+  app.use(koaBody());
+
+  app.use(serve(path.join(__dirname, '../uploads')));
+
+  app.use(router.routes()).use(router.allowedMethods());
+
+  app.listen(config.port, async () => {
+    console.log(`User-service running on port ${config.port} in ${config.environment} environment`);
+  });
 }
 
-connectDB();
-app.use(cors({ credentials: true }));
-app.use(errorHandler);
-app.use(koaBody());
-
-app.use(serve(path.join(__dirname, '../uploads')));
-
-app.use(router.routes()).use(router.allowedMethods());
-
-app.listen(config.port, async () => {
-  console.log(`User-service running on port ${config.port} in ${config.environment} environment`);
-});
+startup();
