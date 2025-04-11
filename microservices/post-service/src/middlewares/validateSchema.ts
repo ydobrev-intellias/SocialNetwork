@@ -6,7 +6,7 @@ export const validateSchema = <T extends object>(schema: JSONSchemaType<T>) => {
   return async (ctx: Context, next: Next) => {
     const validator = schemaValidator(schema);
 
-    const invalid = validator(ctx.request.body);
+    const invalid = validator(ctx.request.body as T);
 
     if (invalid) {
       console.error(invalid);

@@ -9,6 +9,7 @@ import { Comment } from '../entities/Comment';
 import { PostPrivacy } from '../types/common';
 import { config } from '../../config';
 import { RepostWithOwnerProfile } from '../types/post';
+import { produceMessages } from '../rabbitmq/producer';
 
 export const createPost = async (ctx: Context) => {
   const body = ctx.request.body as Post;
@@ -28,6 +29,17 @@ export const createPost = async (ctx: Context) => {
     newPost.mediaPath = path;
     await postRepository.save(newPost);
   }
+
+  const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${newPost.ownerId}`, {
+    withCredentials: true,
+  });
+  console.log(ownerProfileResponse.data);
+  produceMessages('followersNotifications', {
+    content: `${ownerProfileResponse.data.username} created a new post`,
+    targetId: newPost.id,
+    followers: ownerProfileResponse.data.followers,
+    createdAt: newPost.createdAt as Date,
+  });
 
   return newPost;
 };
@@ -100,6 +112,15 @@ export const deletePost = async (ctx: Context) => {
   }
 
   await postRepository.delete({ id: postId });
+  const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${post.ownerId}`, {
+    withCredentials: true,
+  });
+  produceMessages('followersNotifications', {
+    content: `${ownerProfileResponse.data.username} deleted a post`,
+    targetId: '',
+    followers: ownerProfileResponse.data.followers,
+    createdAt: new Date(),
+  });
 };
 
 export const updatePost = async (ctx: Context) => {

@@ -5,6 +5,7 @@ import { Post } from '../entities/Post';
 import axios from 'axios';
 import { config } from '../../config';
 import { CommentsWithOwnerProfile } from '../types/comment';
+import { produceMessages } from '../rabbitmq/producer';
 
 export const createComment = async (ctx: Context) => {
   const { postId } = ctx.params;
@@ -31,8 +32,20 @@ export const createComment = async (ctx: Context) => {
     post,
     ownerId,
   });
+  const commenterProfileResponse = await axios.get(`${config.userServiceUrl}/${ownerId}`, {
+    withCredentials: true,
+  });
 
-  return await commentRepository.save(comment);
+  const createdComment = await commentRepository.save(comment);
+
+  produceMessages('ownerNotifications', {
+    content: `${commenterProfileResponse.data.username} commented on this post`,
+    targetId: post.id,
+    ownerId: post.ownerId,
+    createdAt: createdComment.createdAt,
+  });
+
+  return createComment;
 };
 
 export const getComments = async (ctx: Context) => {
@@ -56,11 +69,11 @@ export const getComments = async (ctx: Context) => {
 
   if (comments?.length > 0) {
     for (let comment of comments) {
-      const response = await axios.get(`${config.userServiceUrl}/${comment.ownerId}`, {
+      const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${comment.ownerId}`, {
         withCredentials: true,
       });
-      console.log('Comments service owner response', response);
-      comment.ownerProfile = response.data;
+      console.log('Comments service owner response', ownerProfileResponse);
+      comment.ownerProfile = ownerProfileResponse.data;
     }
   }
 
