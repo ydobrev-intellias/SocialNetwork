@@ -1,65 +1,66 @@
 import { Middleware } from '@reduxjs/toolkit';
 import { io, Socket } from 'socket.io-client';
-import { socketActions } from '@/redux/slices/socketSlice';
+import { API_MESSAGE_PATH } from '@/config';
+import { messageActions } from '@/redux/slices/messageSlice';
 
 let socket: Socket | null = null;
 
-export const createSocketMiddleware = (url: string): Middleware => {
+export const createMessageSocketMiddleware = (url: string): Middleware => {
   return (store) => (next) => (action) => {
-    if (socketActions.connect.match(action)) {
+    if (messageActions.connect.match(action)) {
       if (!socket) {
-        console.log(action.payload.userId);
         socket = io(url, {
+          path: API_MESSAGE_PATH,
           query: {
             userId: action.payload.userId,
           },
         });
 
         socket.on('connect', () => {
-          store.dispatch(socketActions.connected());
+          store.dispatch(messageActions.connected());
         });
 
         socket.on('disconnect', () => {
-          store.dispatch(socketActions.disconnected());
+          store.dispatch(messageActions.disconnected());
         });
 
         socket.on('message', (data: any) => {
-          store.dispatch(socketActions.messageReceived(data));
+          store.dispatch(messageActions.messageReceived(data));
         });
 
         socket.on('messages', (data: any) => {
-          store.dispatch(socketActions.messagesReceived(data));
+          store.dispatch(messageActions.messagesReceived(data));
         });
 
         socket.on('message_deleted', (messageId: string) => {
-          store.dispatch(socketActions.messageDeleted(messageId));
+          store.dispatch(messageActions.messageDeleted(messageId));
         });
 
         socket.on('message_updated', (data) => {
-          store.dispatch(socketActions.messageUpdated(data));
+          store.dispatch(messageActions.messageUpdated(data));
         });
 
         socket.on('error', (error) => {
-          store.dispatch(socketActions.errorOccurred(error.message || 'Socket error'));
+          store.dispatch(messageActions.errorOccurred(error.message || 'Socket error'));
         });
       }
     }
 
-    if (socketActions.disconnect.match(action) && socket) {
+    if (messageActions.disconnect.match(action) && socket) {
       socket.disconnect();
       socket = null;
     }
 
-    if (socketActions.sendMessage.match(action) && socket) {
+    if (messageActions.sendMessage.match(action) && socket) {
       socket.emit('message', action.payload);
     }
-    if (socketActions.getMessages.match(action) && socket) {
+    if (messageActions.getMessages.match(action) && socket) {
       socket.emit('messages', action.payload.receiverId);
     }
-    if (socketActions.deleteMessage.match(action) && socket) {
+    if (messageActions.deleteMessage.match(action) && socket) {
       socket.emit('delete_message', action.payload.messageId);
     }
-    if (socketActions.updateMessage.match(action) && socket) {
+    if (messageActions.updateMessage.match(action) && socket) {
       socket.emit('update_message', action.payload);
     }
 

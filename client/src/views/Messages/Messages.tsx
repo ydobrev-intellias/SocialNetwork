@@ -1,4 +1,3 @@
-import { socketActions } from '@/redux/slices/socketSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,10 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Pencil, Send, Trash2 } from 'lucide-react';
+import { messageActions } from '@/redux/slices/messageSlice';
 
 const Messages = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const messages = useSelector((state: RootState) => state.socket.messages);
+  const messages = useSelector((state: RootState) => state.message.messages);
   const { user } = useSelector((state: RootState) => state.auth);
   const [recipientId, setRecipientId] = useState('');
   const [messageText, setMessageText] = useState('');
@@ -26,7 +26,7 @@ const Messages = () => {
   const handleSend = () => {
     if (user && messageText.trim())
       dispatch(
-        socketActions.sendMessage({
+        messageActions.sendMessage({
           senderId: user?.id,
           receiverId: recipientId,
           content: messageText,
@@ -37,7 +37,7 @@ const Messages = () => {
   };
 
   const handleDelete = (messageId: string) => {
-    dispatch(socketActions.deleteMessage({ messageId }));
+    dispatch(messageActions.deleteMessage({ messageId }));
   };
 
   const handleEdit = (msgId: string, currentText: string) => {
@@ -52,7 +52,7 @@ const Messages = () => {
 
   const handleUpdate = (msgId: string) => {
     if (editedText.trim()) {
-      dispatch(socketActions.updateMessage({ messageId: msgId, newContent: editedText }));
+      dispatch(messageActions.updateMessage({ messageId: msgId, newContent: editedText }));
       setEditingMessageId(null);
       setEditedText('');
     }
@@ -77,7 +77,7 @@ const Messages = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (selectedUser) dispatch(socketActions.getMessages({ receiverId: selectedUser.id }));
+    if (selectedUser) dispatch(messageActions.getMessages({ receiverId: selectedUser.id }));
   }, [dispatch, selectedUser?.id]);
 
   useEffect(() => {

@@ -12,6 +12,7 @@ import UserProfileLink from '@/components/user/UserProfileLink';
 import { Post } from '@/types/post';
 import { User } from '@/types/user';
 import { format } from 'date-fns';
+import { NotificationBell } from '@/components/notification/NotificationBell';
 
 export default function Sidebar() {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -210,15 +211,9 @@ export default function Sidebar() {
                     <span>Messages</span>
                   </Link>
                 </li>
-                {/* <li>
-                  <Link
-                    to="/notifications"
-                    className={`flex items-center space-x-3 p-3 rounded-lg ${isActive('/notifications')}`}
-                  >
-                    <Bell size={20} />
-                    <span>Notifications</span>
-                  </Link>
-                </li> */}
+                <li>
+                  <NotificationBell />
+                </li>
                 <li>
                   <Link
                     to="/profile"

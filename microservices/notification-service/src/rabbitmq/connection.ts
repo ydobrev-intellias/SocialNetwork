@@ -4,10 +4,7 @@ import { config } from '../../config';
 let connection: ChannelModel | null = null;
 let channel: Channel | null = null;
 
-export const connectToRabbitMQ = async (): Promise<{
-  connection: ChannelModel;
-  channel: Channel;
-} | void> => {
+export const connectToRabbitMQ = async (): Promise<{ connection: ChannelModel; channel: Channel } | void> => {
   try {
     if (!connection || !channel) {
       connection = await amqp.connect(config.rabbitmqUrl);
