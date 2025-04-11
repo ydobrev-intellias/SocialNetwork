@@ -11,7 +11,8 @@ import SignUpForm from './views/SignUpForm/SignUpForm';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './redux/store';
-import { socketActions } from './redux/slices/socketSlice';
+import { messageActions } from './redux/slices/messageSlice';
+import { notificationActions } from './redux/slices/notificationSlice';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -19,11 +20,13 @@ function App() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      dispatch(socketActions.connect({ userId: user.id }));
+      dispatch(messageActions.connect({ userId: user.id }));
+      dispatch(notificationActions.connect({ userId: user.id }));
     }
 
     return () => {
-      dispatch(socketActions.disconnect());
+      dispatch(messageActions.disconnect());
+      dispatch(notificationActions.disconnect());
     };
   }, [isAuthenticated, dispatch]);
   return (

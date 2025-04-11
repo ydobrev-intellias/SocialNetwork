@@ -54,6 +54,7 @@ export default function PostCard({
   const handleDelete = async (postId: string) => {
     await dispatch(deletePost({ postId }));
     dispatch(getPosts());
+    navigate('/');
   };
 
   const handleEditPost = (post: Post) => {
