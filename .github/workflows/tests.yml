@@ -1,0 +1,41 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    container:
+      image: node:18-alpine
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run tests in each microservice
+        run: |
+          for service in microservices/*; do
+            if [ -f "$service/package.json" ]; then
+              echo "▶️  Testing $service"
+              cd "$service"
+
+              # Ensure dependencies are installed in the service
+              echo "📦 Installing dependencies in $service..."
+              npm ci || npm install
+
+              # Check if 'test' script exists in package.json
+              if npm run --silent test; then
+                echo "🧪 Running tests in $service..."
+                # Use npx to ensure Jest is executed from local node_modules
+                npx jest || (echo "❌ Tests failed in $service" && exit 1)
+              else
+                echo "⏭️  Skipping $service (no 'test' script)"
+              fi
+
+              cd - > /dev/null
+            else
+              echo "⏭️  Skipping $service (no package.json)"
+            fi
+          done
