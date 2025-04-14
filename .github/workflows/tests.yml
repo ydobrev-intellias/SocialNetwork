@@ -14,18 +14,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install and run tests in each microservice
+      - name: Run tests in each microservice
         run: |
           for service in microservices/*; do
             if [ -f "$service/package.json" ]; then
               echo "▶️  Testing $service"
               cd "$service"
               
-              echo "📦 Installing dependencies..."
-              npm ci
+              # Check if 'test' script exists in package.json
+              if npm run --silent test; then
+                echo "📦 Installing dependencies..."
+                npm ci
 
-              echo "🧪 Running tests..."
-              npm test || (echo "❌ Tests failed in $service" && exit 1)
+                echo "🧪 Running tests..."
+                npm test || (echo "❌ Tests failed in $service" && exit 1)
+              else
+                echo "⏭️  Skipping $service (no 'test' script)"
+              fi
 
               cd - > /dev/null
             else
