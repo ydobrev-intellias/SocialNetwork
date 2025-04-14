@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
     container:
       image: node:18-alpine
@@ -20,14 +20,16 @@ jobs:
             if [ -f "$service/package.json" ]; then
               echo "▶️  Testing $service"
               cd "$service"
-              
+
+              # Ensure dependencies are installed in the service
+              echo "📦 Installing dependencies in $service..."
+              npm ci || npm install
+
               # Check if 'test' script exists in package.json
               if npm run --silent test; then
-                echo "📦 Installing dependencies..."
-                npm ci
-
-                echo "🧪 Running tests..."
-                npm test || (echo "❌ Tests failed in $service" && exit 1)
+                echo "🧪 Running tests in $service..."
+                # Use npx to ensure Jest is executed from local node_modules
+                npx jest || (echo "❌ Tests failed in $service" && exit 1)
               else
                 echo "⏭️  Skipping $service (no 'test' script)"
               fi
