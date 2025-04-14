@@ -1,0 +1,35 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: node:18-alpine
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install and run tests in each microservice
+        run: |
+          for service in microservices/*; do
+            if [ -f "$service/package.json" ]; then
+              echo "▶️  Testing $service"
+              cd "$service"
+              
+              echo "📦 Installing dependencies..."
+              npm ci
+
+              echo "🧪 Running tests..."
+              npm test || (echo "❌ Tests failed in $service" && exit 1)
+
+              cd - > /dev/null
+            else
+              echo "⏭️  Skipping $service (no package.json)"
+            fi
+          done
