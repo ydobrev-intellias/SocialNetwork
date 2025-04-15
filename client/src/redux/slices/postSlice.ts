@@ -4,6 +4,7 @@ import axios, { AxiosError } from 'axios';
 import { Status } from '@/types/common';
 import { CreatePost, CreateRepost, Post, UpdatePost } from '@/types/post';
 import { Like } from '@/types/like';
+import { handleError } from '@/utils/handleError';
 
 interface PostState {
   posts: Post[] | null;
@@ -16,19 +17,19 @@ const initialState: PostState = {
   status: Status.IDLE,
 };
 
-export const getPosts = createAsyncThunk('post/getPosts', async (_, { rejectWithValue }) => {
-  try {
-    const response = await axios.get(`${API_POSTS_URL}/`, {
-      withCredentials: true,
-    });
-    console.log(response.data);
-    return response.data;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      return rejectWithValue(error.response?.data);
+export const getPosts = createAsyncThunk(
+  'post/getPosts',
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await axios.get(`${API_POSTS_URL}/`, {
+        withCredentials: true,
+      });
+      return response.data;
+    } catch (error) {
+      handleError(error, rejectWithValue, dispatch);
     }
-  }
-});
+  },
+);
 export const createRepost = createAsyncThunk(
   'post/createRepost',
   async (
@@ -36,11 +37,9 @@ export const createRepost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      console.log(`postSlice createRepost ${postId} ${repostData}`);
       const response = await axios.post(`${API_POSTS_URL}/${postId}/reposts`, repostData, {
         withCredentials: true,
       });
-      console.log('Response', response);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -53,21 +52,19 @@ export const createRepost = createAsyncThunk(
 
 export const deletePost = createAsyncThunk(
   'post/deletePost',
-  async ({ postId }: { postId: string }, { rejectWithValue }) => {
+  async ({ postId }: { postId: string }, { rejectWithValue, dispatch }) => {
     try {
       await axios.delete(`${API_POSTS_URL}/${postId}`, { withCredentials: true });
       return postId;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 
 export const createPost = createAsyncThunk(
   'post/createPost',
-  async (data: CreatePost, { rejectWithValue }) => {
+  async (data: CreatePost, { rejectWithValue, dispatch }) => {
     try {
       const formData = new FormData();
       formData.append('content', data.content);
@@ -86,18 +83,15 @@ export const createPost = createAsyncThunk(
 
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 
 export const updatePost = createAsyncThunk(
   'post/updatePost',
-  async ({ postId, data }: { postId: string; data: UpdatePost }, { rejectWithValue }) => {
+  async ({ postId, data }: { postId: string; data: UpdatePost }, { rejectWithValue, dispatch }) => {
     try {
-      console.log('Update data', data);
       const formData = new FormData();
       if (data.content) formData.append('content', data.content);
       if (data.privacy) formData.append('privacy', data.privacy);
@@ -105,7 +99,6 @@ export const updatePost = createAsyncThunk(
       if (data.file) {
         formData.append('file', data.file);
       }
-      console.log('Update formData', data);
 
       const response = await axios.patch(`${API_POSTS_URL}/${postId}`, formData, {
         withCredentials: true,
@@ -116,9 +109,7 @@ export const updatePost = createAsyncThunk(
 
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
@@ -127,17 +118,13 @@ export const toggleLike = createAsyncThunk(
   'posts/toggleLike',
   async (
     { postId, isLiked, likeId }: { postId: string; isLiked: boolean; likeId?: string },
-    { rejectWithValue },
+    { rejectWithValue, dispatch },
   ) => {
     try {
-      console.log('Toggle like');
-      console.log({ postId, isLiked, likeId });
       if (isLiked) {
-        console.log('isLiked', isLiked);
-        const res = await axios.delete(`${API_POSTS_URL}/likes/${likeId}`, {
+        await axios.delete(`${API_POSTS_URL}/likes/${likeId}`, {
           withCredentials: true,
         });
-        console.log('Delete result', res);
         return { postId, likeId, isLiked: false };
       } else {
         const res = await axios.post(
@@ -147,23 +134,20 @@ export const toggleLike = createAsyncThunk(
             withCredentials: true,
           },
         );
-        console.log(res);
         return { postId, like: res.data, isLiked: true };
       }
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.log(error.response);
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 export const createComment = createAsyncThunk(
   'comments/createComment',
-  async ({ content, postId }: { content: string; postId: string }, { rejectWithValue }) => {
-    console.log(`Content ${content} postId ${postId}`);
+  async (
+    { content, postId }: { content: string; postId: string },
+    { rejectWithValue, dispatch },
+  ) => {
     try {
-      console.log('Content of comment to create', content);
       const response = await axios.post(
         `${API_POSTS_URL}/${postId}/comments`,
         { content },
@@ -171,20 +155,18 @@ export const createComment = createAsyncThunk(
           withCredentials: true,
         },
       );
-      console.log('Create comment response', response);
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.log(error.response);
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 export const updateComment = createAsyncThunk(
   'comments/updateComment',
-  async ({ content, commentId }: { content: string; commentId: string }, { rejectWithValue }) => {
-    console.log(`Content ${content} commentId ${commentId}`);
+  async (
+    { content, commentId }: { content: string; commentId: string },
+    { rejectWithValue, dispatch },
+  ) => {
     try {
       const response = await axios.patch(
         `${API_POSTS_URL}/comments/${commentId}`,
@@ -195,27 +177,20 @@ export const updateComment = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.log(error.response);
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 export const deleteComment = createAsyncThunk(
   'comments/deleteComment',
-  async ({ commentId }: { commentId: string }, { rejectWithValue }) => {
-    console.log(`Content commentId ${commentId}`);
+  async ({ commentId }: { commentId: string }, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.delete(`${API_POSTS_URL}/comments/${commentId}`, {
         withCredentials: true,
       });
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.log(error.response);
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
@@ -223,7 +198,6 @@ export const deleteComment = createAsyncThunk(
 export const getComments = createAsyncThunk(
   'comments/getComments',
   async ({ postId }: { postId: string }, { rejectWithValue }) => {
-    console.log(`Content postId ${postId}`);
     try {
       const response = await axios.get(`${API_POSTS_URL}/${postId}/comments`, {
         withCredentials: true,
@@ -231,7 +205,6 @@ export const getComments = createAsyncThunk(
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.log(error.response);
         return rejectWithValue(error.response?.data);
       }
     }
@@ -257,6 +230,9 @@ const postSlice = createSlice({
       })
       .addCase(createPost.pending, (state) => {
         state.status = Status.PENDING;
+      })
+      .addCase(createPost.rejected, (state) => {
+        state.status = Status.FAILED;
       })
       .addCase(createPost.fulfilled, (state, action: PayloadAction<Post>) => {
         state.status = Status.IDLE;
@@ -284,7 +260,7 @@ const postSlice = createSlice({
 
       .addCase(toggleLike.fulfilled, (state, action: PayloadAction<any>) => {
         const { postId, like, isLiked, likeId } = action.payload;
-        const post = state?.posts!.find((post: Post) => post.id === postId);
+        const post = state?.posts!.find((post: Post) => post?.id === postId);
         if (!post) return;
 
         if (post.likes)

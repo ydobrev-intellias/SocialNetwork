@@ -4,6 +4,7 @@ import { API_AUTH_URL, API_USERS_URL } from '../../config';
 import { RootState } from '../store';
 import { Status } from '@/types/common';
 import { Contact, Role, User } from '@/types/user';
+import { handleError } from '@/utils/handleError';
 
 interface AuthState {
   user: User | null;
@@ -33,7 +34,6 @@ export const signUp = createAsyncThunk(
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.log(error.response);
         return rejectWithValue(error.response?.data);
       }
     }
@@ -50,7 +50,6 @@ export const signIn = createAsyncThunk(
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.log(error.response);
         return rejectWithValue(error.response?.data);
       }
     }
@@ -111,13 +110,11 @@ export const getProfile = createAsyncThunk(
       const response = await axios.get(`${API_USERS_URL}/${userId ?? state.auth.user?.id}`, {
         withCredentials: true,
       });
-      console.log('Get profile response', response);
 
       return { data: response.data, isOwnProfile };
     } catch (error) {
       if (error instanceof AxiosError) {
         return rejectWithValue(error.response?.data);
-        // handleError(error, rejectWithValue, dispatch);
       }
     }
   },
@@ -125,7 +122,7 @@ export const getProfile = createAsyncThunk(
 
 export const followUser = createAsyncThunk(
   'auth/followUser',
-  async (userId: string, { rejectWithValue }) => {
+  async (userId: string, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.post(
         `${API_USERS_URL}/follow/${userId}`,
@@ -134,16 +131,14 @@ export const followUser = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 
 export const unfollowUser = createAsyncThunk(
   'auth/unfollowUser',
-  async (userId: string, { rejectWithValue }) => {
+  async (userId: string, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.post(
         `${API_USERS_URL}/unfollow/${userId}`,
@@ -152,9 +147,7 @@ export const unfollowUser = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
@@ -163,7 +156,7 @@ export const updateProfile = createAsyncThunk(
   'user/updateProfile',
   async (
     { profileData, userId }: { profileData: Partial<User>; userId?: string },
-    { getState, rejectWithValue },
+    { getState, rejectWithValue, dispatch },
   ) => {
     const state = getState() as RootState;
     const isOwnProfile = !userId;
@@ -178,46 +171,36 @@ export const updateProfile = createAsyncThunk(
           withCredentials: true,
         },
       );
-      console.log('Update profile response', response.data);
 
       return { data: response.data, isOwnProfile };
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.error(error.response);
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 
 export const deleteUser = createAsyncThunk(
   'user/deleteUser',
-  async ({ userId }: { userId?: string }, { getState, rejectWithValue }) => {
+  async ({ userId }: { userId?: string }, { getState, rejectWithValue, dispatch }) => {
     const state = getState() as RootState;
     const isOwnProfile = !userId;
     try {
       if (!state.auth.user) {
         return rejectWithValue('User not found');
       }
-      console.log({ userId, authUserId: state.auth.user.id });
-      console.log(userId || state.auth.user.id);
-
       await axios.delete(`${API_USERS_URL}/${userId || state.auth.user.id}`, {
         withCredentials: true,
       });
 
       return { isOwnProfile };
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.log(error.response);
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 export const createContact = createAsyncThunk(
   'user/createContact',
-  async (contactData: Omit<Contact, 'id'>, { getState, rejectWithValue }) => {
+  async (contactData: Omit<Contact, 'id'>, { getState, rejectWithValue, dispatch }) => {
     const state = getState() as RootState;
 
     try {
@@ -243,16 +226,14 @@ export const createContact = createAsyncThunk(
 
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 
 export const deleteContact = createAsyncThunk(
   'user/deleteContact',
-  async (contactId: string, { getState, rejectWithValue }) => {
+  async (contactId: string, { getState, rejectWithValue, dispatch }) => {
     const state = getState() as RootState;
 
     try {
@@ -266,16 +247,14 @@ export const deleteContact = createAsyncThunk(
 
       return contactId;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
 
 export const updateContact = createAsyncThunk(
   'user/updateContact',
-  async (contactData: Partial<Contact>, { getState, rejectWithValue }) => {
+  async (contactData: Partial<Contact>, { getState, rejectWithValue, dispatch }) => {
     const state = getState() as RootState;
 
     const { id: contactId, ...contactDataWithoutId } = contactData;
@@ -283,7 +262,6 @@ export const updateContact = createAsyncThunk(
       if (!state.auth.user) {
         return rejectWithValue('User not found');
       }
-      console.log('ContactData', contactDataWithoutId);
 
       const response = await axios.patch(
         `${API_USERS_URL}/${state.auth.user.id}/contacts/${contactId}`,
@@ -295,9 +273,7 @@ export const updateContact = createAsyncThunk(
 
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );
@@ -359,8 +335,6 @@ const authSlice = createSlice({
         state.isAdmin = false;
       })
       .addCase(getProfile.fulfilled, (state, action: PayloadAction<any>) => {
-        console.log('Payload', action.payload);
-        console.log('User', state.user);
         if (!action.payload?.isOwnProfile) {
           return;
         }
@@ -380,11 +354,8 @@ const authSlice = createSlice({
             state.user.coverPath = null;
           }
         }
-        console.log('Upload image pending', action.meta.arg.type);
       })
       .addCase(uploadImage.fulfilled, (state, action: PayloadAction<any>) => {
-        console.log('Upload image Payload', action.payload);
-        console.log('Upload image User', state.user);
         if (state.user) {
           if (action.payload.type === 'avatar') {
             state.user.avatarPath = action.payload?.path ?? '';
