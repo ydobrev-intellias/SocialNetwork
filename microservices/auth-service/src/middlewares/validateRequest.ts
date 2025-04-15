@@ -40,13 +40,17 @@ export const validateRequest = async (ctx: Context, next: Next) => {
       await next();
       return;
     }
-    ctx.status = 401;
+    ctx.status = 200;
+    ctx.set('X-Auth-Error-Message', 'Invalid or expired token');
+    ctx.set('X-Auth-Error-Status', '401');
     return;
   }
 
   const blacklisted = await redis.get(`blacklisted:${token}`);
   if (blacklisted) {
-    ctx.status = 403;
+    ctx.status = 200;
+    ctx.set('X-Auth-Error-Message', 'Token has been revoked');
+    ctx.set('X-Auth-Error-Status', '403');
     return;
   }
 
@@ -56,7 +60,9 @@ export const validateRequest = async (ctx: Context, next: Next) => {
     ctx.set('X-Auth-User-Data', JSON.stringify(decoded));
     await next();
   } catch (err) {
-    ctx.status = 401;
+    ctx.status = 200;
+    ctx.set('X-Auth-Error-Message', 'Token invalid');
+    ctx.set('X-Auth-Error-Status', '401');
     return;
   }
 };
