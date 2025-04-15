@@ -26,10 +26,9 @@ jobs:
               npm ci || npm install
 
               # Check if 'test' script exists in package.json
-              if npm run --silent test; then
+              if npm run | grep -q " test"; then
                 echo "🧪 Running tests in $service..."
-                # Use npx to ensure Jest is executed from local node_modules
-                npx jest || (echo "❌ Tests failed in $service" && exit 1)
+                npm test || (echo "❌ Tests failed in $service" && exit 1)
               else
                 echo "⏭️  Skipping $service (no 'test' script)"
               fi
