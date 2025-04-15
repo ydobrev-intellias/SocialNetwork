@@ -134,7 +134,7 @@ export default function Sidebar() {
                           className="py-1 px-2 text-gray-600 cursor-pointer hover:bg-gray-100 border-b border-gray-200 last:border-0"
                           onClick={closeSearch}
                         >
-                          <Link to={`/posts/${post.id}`}>
+                          <Link to={`/posts/${post?.id}`}>
                             <div className="flex flex-col">
                               <div className="flex items-center space-x-2">
                                 <UserProfileLink activity={post} withLink={false} />
