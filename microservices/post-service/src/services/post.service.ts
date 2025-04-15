@@ -33,7 +33,6 @@ export const createPost = async (ctx: Context) => {
   const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${newPost.ownerId}`, {
     withCredentials: true,
   });
-  console.log(ownerProfileResponse.data);
   produceMessages('followersNotifications', {
     content: `${ownerProfileResponse.data.username} created a new post`,
     targetId: newPost.id,

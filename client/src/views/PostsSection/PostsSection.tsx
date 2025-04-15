@@ -26,7 +26,6 @@ export default function PostsSection({
   if (status === 'pending') {
     return <h1>Loading ..</h1>;
   }
-  console.log('posts section', posts);
   return (
     <>
       {posts && posts.length > 0 ? (

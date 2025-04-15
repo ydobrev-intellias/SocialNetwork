@@ -10,7 +10,6 @@ interface GuestRouteProps {
 const GuestRoute = ({ children }: GuestRouteProps) => {
   const navigate = useNavigate();
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  console.log(isAuthenticated);
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/');

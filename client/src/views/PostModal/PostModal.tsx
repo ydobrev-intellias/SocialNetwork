@@ -39,7 +39,6 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
       const response = await axios.get(`${API_POSTS_URL}/${postId}/comments`, {
         withCredentials: true,
       });
-      console.log(response);
       setComments(response.data);
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -50,7 +49,6 @@ export default function PostModal({ postId, onClose }: PostModalProps) {
       const response = await axios.get(`${API_POSTS_URL}/${postId}`, {
         withCredentials: true,
       });
-      console.log('PostModal post', response.data);
       setPost(response.data);
     } catch (error) {
       console.error('Error fetching post:', error);

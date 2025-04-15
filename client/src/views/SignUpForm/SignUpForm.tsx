@@ -46,7 +46,6 @@ function SignUpForm() {
       type: e.target.name,
       payload: e.target.value,
     });
-    console.log(formState.role.value);
   }
 
   async function handleSubmit() {
@@ -88,7 +87,6 @@ function SignUpForm() {
         role: formState.role.value,
       }),
     );
-    console.log('Sign up dispatch result', result);
 
     if (result.meta.requestStatus === 'fulfilled') {
       navigate('/');

@@ -79,7 +79,6 @@ export default function ActivityWall() {
             setPostToEdit(undefined);
           }}
           onCreateOrUpdatePost={() => {
-            console.log('POST ACTION');
             if (mode === Mode.CREATE) {
               dispatch(getPosts());
             } else if (Mode.UPDATE && postToEdit?.id) {

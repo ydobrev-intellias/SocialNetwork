@@ -31,7 +31,6 @@ export default function CreateRepostModal({
   const [privacy, setPrivacy] = useState<PostPrivacy>(postData?.privacy || PostPrivacy.PUBLIC);
 
   useEffect(() => {
-    console.log('REPOST DATA', postData);
     if (isOpen) {
       setContent(mode === Mode.UPDATE ? postData?.content || '' : '');
       setPrivacy(

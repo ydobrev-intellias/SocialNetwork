@@ -105,7 +105,6 @@ export const deleteAuthUser = async (ctx: Context) => {
   const { userId } = ctx.params;
 
   const userDataHeader = ctx.headers['x-auth-user-data'];
-  console.log(typeof userDataHeader);
   if (!userDataHeader) {
     ctx.throw(401, 'Missing authentication data');
   }
