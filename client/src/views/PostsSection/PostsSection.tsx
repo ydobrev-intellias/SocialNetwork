@@ -30,20 +30,22 @@ export default function PostsSection({
   return (
     <>
       {posts && posts.length > 0 ? (
-        posts.map((post: Post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            setCommentsOpen={setCommentsOpen}
-            setModalOpen={setModalOpen}
-            setMode={setMode}
-            setPostToEdit={setPostToEdit}
-            isCommentsOpen={isCommentsOpen}
-            setIsRepost={setIsRepost}
-            setOriginalPostId={setOriginalPostId}
-            isWall={true}
-          />
-        ))
+        posts
+          .filter(Boolean)
+          .map((post: Post) => (
+            <PostCard
+              key={post?.id}
+              post={post}
+              setCommentsOpen={setCommentsOpen}
+              setModalOpen={setModalOpen}
+              setMode={setMode}
+              setPostToEdit={setPostToEdit}
+              isCommentsOpen={isCommentsOpen}
+              setIsRepost={setIsRepost}
+              setOriginalPostId={setOriginalPostId}
+              isWall={true}
+            />
+          ))
       ) : (
         <div className="flex flex-col items-center justify-center p-6 text-center bg-gray-100 rounded-lg">
           <Ghost className="w-12 h-12 text-gray-400" />

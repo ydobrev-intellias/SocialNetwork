@@ -9,6 +9,7 @@ import fs from 'fs';
 import serve from 'koa-static';
 import { errorHandler } from './middlewares/errorHandler';
 import { connectToRabbitMQ } from './rabbitmq/connection';
+import validateRequest from './middlewares/validateRequest';
 
 async function startup() {
   try {
@@ -23,6 +24,7 @@ async function startup() {
     await connectDB();
     await connectToRabbitMQ();
     app.use(cors({ credentials: true }));
+    app.use(validateRequest);
     app.use(errorHandler);
     app.use(
       koaBody({

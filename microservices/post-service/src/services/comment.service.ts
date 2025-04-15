@@ -10,7 +10,7 @@ import { produceMessages } from '../rabbitmq/producer';
 export const createComment = async (ctx: Context) => {
   const { postId } = ctx.params;
   const { content } = ctx.request.body as any;
-  const { id: ownerId } = JSON.parse(ctx.headers['x-auth-user-data'] as string);
+  const { id: commenterId } = JSON.parse(ctx.headers['x-auth-user-data'] as string);
 
   const postRepository = AppDataSource.getRepository(Post);
   let post = await postRepository.findOne({
@@ -30,22 +30,24 @@ export const createComment = async (ctx: Context) => {
   const comment = commentRepository.create({
     content,
     post,
-    ownerId,
+    ownerId: commenterId,
   });
-  const commenterProfileResponse = await axios.get(`${config.userServiceUrl}/${ownerId}`, {
+  const commenterProfileResponse = await axios.get(`${config.userServiceUrl}/${commenterId}`, {
     withCredentials: true,
   });
 
   const createdComment = await commentRepository.save(comment);
 
-  produceMessages('ownerNotifications', {
-    content: `${commenterProfileResponse.data.username} commented on this post`,
-    targetId: post.id,
-    ownerId: post.ownerId,
-    createdAt: createdComment.createdAt,
-  });
+  if (commenterId !== post.ownerId) {
+    produceMessages('ownerNotifications', {
+      content: `${commenterProfileResponse.data.username} commented on this post`,
+      targetId: post.id,
+      ownerId: post.ownerId,
+      createdAt: createdComment.createdAt,
+    });
+  }
 
-  return createComment;
+  return createdComment;
 };
 
 export const getComments = async (ctx: Context) => {

@@ -38,6 +38,8 @@ export default function PostCard({
   isWall,
 }: PostCardProps) {
   const { isAuthenticated, user, isAdmin } = useSelector((state: RootState) => state.auth);
+
+  if (!post) return;
   const dispatch = useDispatch<AppDispatch>();
   const userLike = post?.likes?.find((like: Like) => like.userId === user?.id);
   const isLiked = !!userLike;
@@ -65,9 +67,9 @@ export default function PostCard({
 
   return (
     <Card
-      key={post.id}
+      key={post?.id}
       onClick={() => {
-        if (isWall) navigate(`/posts/${post.id}`);
+        if (isWall) navigate(`/posts/${post?.id}`);
       }}
       className={`mt-4 p-4 bg-white border border-gray-300 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 ${isWall ? 'cursor-pointer' : ''}`}
     >
@@ -93,7 +95,7 @@ export default function PostCard({
             className={`mt-4 p-4 bg-cyan-950100 border border-gray-300 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300  ${originalPost ? 'cursor-pointer' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/posts/${originalPost.id}`);
+              navigate(`/posts/${originalPost?.id}`);
             }}
           >
             {isCommentsOpen && (
@@ -162,7 +164,7 @@ export default function PostCard({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                handleLike(post.id, isLiked, userLike?.id);
+                handleLike(post?.id, isLiked, userLike?.id);
               }}
               disabled={!isAuthenticated || post.ownerId === user?.id}
             >
@@ -187,7 +189,7 @@ export default function PostCard({
               <span className="text-sm text-gray-600">{post?.comments?.length}</span>
               {isCommentsOpen && (
                 <PostModal
-                  postId={post.id}
+                  postId={post?.id}
                   onClose={async () => {
                     setCommentsOpen(false);
                     if (refreshData) refreshData();
@@ -206,7 +208,7 @@ export default function PostCard({
                 e.stopPropagation();
                 setIsRepost(true);
                 setModalOpen(true);
-                setOriginalPostId(post.id);
+                setOriginalPostId(post?.id);
               }}
             >
               <Forward className="h-5 w-5 text-gray-600" />
@@ -231,7 +233,7 @@ export default function PostCard({
               variant="outline"
               onClick={(e) => {
                 e.stopPropagation();
-                handleDelete(post.id);
+                handleDelete(post?.id);
               }}
             >
               Delete post

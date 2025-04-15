@@ -117,7 +117,7 @@ export default function PostPage() {
     <div className="container mx-auto p-4">
       {post && (
         <PostCard
-          key={post.id}
+          key={post?.id}
           post={post}
           setCommentsOpen={setCommentsOpen}
           setModalOpen={setModalOpen}
