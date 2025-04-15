@@ -63,8 +63,6 @@ export const unfollow = async (ctx: Context) => {
   }
   const { id: followerId } = JSON.parse(userHeaders as string);
 
-  console.log('Follower and user id', { followerId, userId });
-
   if (followerId === userId) {
     ctx.throw(403, 'Forbidden from unfollowing yourself');
   }

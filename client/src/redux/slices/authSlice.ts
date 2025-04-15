@@ -90,7 +90,6 @@ export const uploadImage = createAsyncThunk(
       return { ...response.data, type };
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.log(error.response);
         return rejectWithValue(error.response?.data);
       }
     }
@@ -103,10 +102,7 @@ export const getProfile = createAsyncThunk(
     const state = getState() as RootState;
     const isOwnProfile = !userId;
 
-    console.log('isOwnProfile', isOwnProfile);
-
     try {
-      console.log('route', `${API_USERS_URL}/${userId ?? state.auth.user?.id}`);
       const response = await axios.get(`${API_USERS_URL}/${userId ?? state.auth.user?.id}`, {
         withCredentials: true,
       });

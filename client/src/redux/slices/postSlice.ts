@@ -34,7 +34,7 @@ export const createRepost = createAsyncThunk(
   'post/createRepost',
   async (
     { postId, repostData }: { postId: string; repostData: CreateRepost },
-    { rejectWithValue },
+    { rejectWithValue, dispatch },
   ) => {
     try {
       const response = await axios.post(`${API_POSTS_URL}/${postId}/reposts`, repostData, {
@@ -42,10 +42,7 @@ export const createRepost = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.log(error);
-        return rejectWithValue(error.response?.data);
-      }
+      handleError(error, rejectWithValue, dispatch);
     }
   },
 );

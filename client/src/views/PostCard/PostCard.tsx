@@ -49,7 +49,6 @@ export default function PostCard({
   const navigate = useNavigate();
 
   const handleLike = async (postId: string, isLiked: boolean, likeId?: string) => {
-    console.log('Handle like', { postId, isLiked, likeId });
     await dispatch(toggleLike({ postId, isLiked, likeId }));
     if (refreshData) refreshData();
   };

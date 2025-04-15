@@ -21,7 +21,6 @@ export const createNotificationSocketMiddleware = (url: string): Middleware => {
         });
 
         socket.on('notification', (data: any) => {
-          console.log('Notification received', data);
           store.dispatch(notificationActions.notificationsReceived(data));
         });
 

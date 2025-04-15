@@ -57,7 +57,6 @@ function SignInForm() {
     const result = await dispatch(
       signIn({ email: formState.email.value, password: formState.password.value }),
     );
-    console.log('Sign in dispatch result ', result);
 
     if (result.meta.requestStatus === 'fulfilled') {
       navigate('/');

@@ -27,6 +27,5 @@ export const updateCommentController = async (ctx: Context) => {
 export const getCommentsController = async (ctx: Context) => {
   const comments = await getComments(ctx);
   ctx.status = 200;
-  console.log('Get comments controller comments', comments);
   ctx.body = comments;
 };

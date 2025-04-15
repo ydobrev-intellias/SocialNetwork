@@ -18,7 +18,6 @@ export const validateRequest = async (ctx: Context, next: Next) => {
   const token = ctx.cookies.get('jwt');
   const xOriginalUri = ctx.headers['x-original-uri'];
   const xOriginalMethod = ctx.headers['x-original-method'];
-  console.log(`${xOriginalUri} ${xOriginalMethod} ${token}`);
   if (xOriginalMethod === 'OPTIONS') {
     ctx.status = 204;
     return;
@@ -34,7 +33,6 @@ export const validateRequest = async (ctx: Context, next: Next) => {
   });
 
   if (!token) {
-    console.log('isAllowedRoute', isAllowedRoute);
     if (isAllowedRoute && xOriginalMethod === 'GET') {
       ctx.status = 200;
       await next();

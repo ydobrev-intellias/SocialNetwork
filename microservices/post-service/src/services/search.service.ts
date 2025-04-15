@@ -50,13 +50,9 @@ export const searchPosts = async (ctx: Context) => {
               },
             );
 
-            console.log('OwnerProfileResponse', ownerProfileResponse.data);
-
             const isFollower = ownerProfileResponse.data.followers?.some(
               (follow: any) => follow.follower.id === userId,
             );
-
-            console.log('isFollower', isFollower);
 
             if (
               post.privacy === PostPrivacy.FOLLOWERS &&

@@ -58,7 +58,6 @@ export const getComments = async (ctx: Context) => {
     where: { id: postId },
     relations: ['comments', 'originalPost'],
   });
-  console.log('Comments post', post);
 
   if (!post) {
     ctx.throw(404, 'Post not found');
@@ -74,7 +73,6 @@ export const getComments = async (ctx: Context) => {
       const ownerProfileResponse = await axios.get(`${config.userServiceUrl}/${comment.ownerId}`, {
         withCredentials: true,
       });
-      console.log('Comments service owner response', ownerProfileResponse);
       comment.ownerProfile = ownerProfileResponse.data;
     }
   }

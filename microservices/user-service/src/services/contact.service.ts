@@ -41,7 +41,6 @@ export const deleteContact = async (ctx: Context) => {
 export const updateContact = async (ctx: Context) => {
   const { contactId } = ctx.params;
   const contactRepository = AppDataSource.getRepository(Contact);
-  console.log('updateContact contactId', contactId);
   const contact = await contactRepository.findOne({
     where: { id: contactId },
     relations: { user: true },
