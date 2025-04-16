@@ -26,13 +26,14 @@ const io = new Server(server, {
 
 connectDB();
 
-const connectedUsers: Record<string, string> = {};
+const connectedUsers = new Map<string, string>();
 
 io.on('connection', async (socket) => {
   const userId = socket.handshake.query.userId as string;
 
   if (userId) {
-    connectedUsers[userId] = socket.id;
+    connectedUsers.set(userId, socket.id);
+    emitOnlineUsers();
     console.log(`User ${userId} connected with socket ${socket.id}`);
   }
 
@@ -49,7 +50,7 @@ io.on('connection', async (socket) => {
       order: { timestamp: 'ASC' },
     });
 
-    const senderSocketId = connectedUsers[userId];
+    const senderSocketId = connectedUsers.get(userId);
     if (senderSocketId) {
       io.to(senderSocketId).emit('messages', messages);
     }
@@ -59,8 +60,8 @@ io.on('connection', async (socket) => {
     const message = messageRepository.create(messageData as Object);
     await messageRepository.save(message);
 
-    const senderSocketId = connectedUsers[message.senderId];
-    const receiverSocketId = connectedUsers[message.receiverId];
+    const senderSocketId = connectedUsers.get(message.senderId);
+    const receiverSocketId = connectedUsers.get(message.receiverId);
 
     if (senderSocketId) {
       io.to(senderSocketId).emit('message', message);
@@ -74,12 +75,12 @@ io.on('connection', async (socket) => {
   socket.on('delete_message', async (messageId) => {
     const message = await messageRepository.findOne({ where: { id: messageId } });
     if (!message) return;
-    const senderSocketId = connectedUsers[message?.senderId];
-    const receiverSocketId = connectedUsers[message?.receiverId];
+    const senderSocketId = connectedUsers.get(message?.senderId);
+    const receiverSocketId = connectedUsers.get(message?.receiverId);
     await messageRepository.remove(message);
 
-    io.to(senderSocketId).emit('message_deleted', messageId);
-    io.to(receiverSocketId).emit('message_deleted', messageId);
+    if (senderSocketId) io.to(senderSocketId).emit('message_deleted', messageId);
+    if (receiverSocketId) io.to(receiverSocketId).emit('message_deleted', messageId);
   });
 
   socket.on('update_message', async (messageData) => {
@@ -91,23 +92,27 @@ io.on('connection', async (socket) => {
     message.content = newContent;
     await messageRepository.save(message);
 
-    const senderSocketId = connectedUsers[message.senderId];
-    const receiverSocketId = connectedUsers[message.receiverId];
+    const senderSocketId = connectedUsers.get(message.senderId);
+    const receiverSocketId = connectedUsers.get(message.receiverId);
 
-    io.to(senderSocketId).emit('message_updated', message);
-    io.to(receiverSocketId).emit('message_updated', message);
+    if (senderSocketId) io.to(senderSocketId).emit('message_updated', message);
+    if (receiverSocketId) io.to(receiverSocketId).emit('message_updated', message);
   });
 
   socket.on('disconnect', () => {
     console.log(`Socket ${socket.id} disconnected`);
-    for (const [uid, sid] of Object.entries(connectedUsers)) {
+    for (const [uid, sid] of connectedUsers.entries()) {
       if (sid === socket.id) {
-        delete connectedUsers[uid];
+        connectedUsers.delete(uid);
+        emitOnlineUsers();
         break;
       }
     }
   });
 });
+function emitOnlineUsers() {
+  io.emit('online_users', Array.from(connectedUsers.keys()));
+}
 
 server.listen(config.port, async () => {
   console.log(
