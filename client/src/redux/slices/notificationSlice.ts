@@ -42,6 +42,9 @@ export const notificationSlice = createSlice({
         (notification) => notification.id !== action.payload.id,
       );
     },
+    notificationReadAll: (state) => {
+      state.notifications = [];
+    },
     errorOccurred: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },

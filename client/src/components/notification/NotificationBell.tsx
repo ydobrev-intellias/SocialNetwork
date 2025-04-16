@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Bell, Trash2, X } from 'lucide-react';
+import { Bell, EyeOff, Trash2, X } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/store';
 import { Button } from '../ui/button';
@@ -52,15 +52,28 @@ export const NotificationBell = () => {
             <div className="bg-white rounded-lg shadow-xl overflow-hidden w-96 max-h-[70vh] flex flex-col">
               <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
                 <h3 className="font-semibold text-gray-900">Notifications</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full p-1 h-8 w-8 hover:bg-gray-200"
-                  onClick={closeModal}
-                >
-                  <X size={18} />
-                  <span className="sr-only">Close</span>
-                </Button>
+
+                <div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-2 h-8 w-8 p-0 rounded-full hover:bg-red-50 flex-shrink-0"
+                    onClick={() => {
+                      dispatch(notificationActions.notificationReadAll());
+                    }}
+                  >
+                    <EyeOff size={16} className="text-red-500" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full p-1 h-8 w-8 hover:bg-gray-200"
+                    onClick={closeModal}
+                  >
+                    <X size={18} />
+                    <span className="sr-only">Close</span>
+                  </Button>
+                </div>
               </div>
 
               <div className="overflow-y-auto flex-1">

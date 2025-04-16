@@ -14,7 +14,7 @@ import { messageActions } from '@/redux/slices/messageSlice';
 
 const Messages = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const messages = useSelector((state: RootState) => state.message.messages);
+  const { messages } = useSelector((state: RootState) => state.message);
   const { user } = useSelector((state: RootState) => state.auth);
   const [recipientId, setRecipientId] = useState('');
   const [messageText, setMessageText] = useState('');
@@ -109,7 +109,7 @@ const Messages = () => {
                     }`}
                     onClick={() => setRecipientId(u.id)}
                   >
-                    <CardContent className="p-3">
+                    <CardContent className="p-3 flex items-center gap-2">
                       <UserProfileLink user={u} withLink={false} />
                     </CardContent>
                   </Card>
