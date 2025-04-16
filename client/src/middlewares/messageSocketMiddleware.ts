@@ -40,6 +40,10 @@ export const createMessageSocketMiddleware = (url: string): Middleware => {
           store.dispatch(messageActions.messageUpdated(data));
         });
 
+        socket.on('online_users', (userIds: string[]) => {
+          store.dispatch(messageActions.onlineUsersUpdated(userIds));
+        });
+
         socket.on('error', (error) => {
           store.dispatch(messageActions.errorOccurred(error.message || 'Socket error'));
         });

@@ -13,6 +13,7 @@ interface MessageState {
   isConnected: boolean;
   messages: Message[];
   selectedUser: User | null;
+  onlineUsers: string[];
   error: string | null;
 }
 
@@ -20,6 +21,7 @@ const initialState: MessageState = {
   isConnected: false,
   messages: [],
   selectedUser: null,
+  onlineUsers: [],
   error: null,
 };
 
@@ -54,6 +56,9 @@ export const messageSlice = createSlice({
     messageUpdated: (state, action) => {
       const message = state.messages.find((message) => message.id === action.payload.id);
       if (message) message!.content = action.payload.content;
+    },
+    onlineUsersUpdated: (state, action: PayloadAction<string[]>) => {
+      state.onlineUsers = action.payload;
     },
     errorOccurred: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
